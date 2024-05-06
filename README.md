@@ -2,6 +2,26 @@
 
 MercuryCMS is a high-performance headless Content Management System (CMS) designed to provide a lightning-fast and flexible backend solution for building highly customizable frontends. Inspired by the Roman god of speed and messengers, MercuryCMS delivers unparalleled performance and scalability, empowering developers to create exceptional digital experiences.
 
+## Project Structure
+
+MercuryCMS follows a modular structure, separating the admin panel and backend server into their respective directories:
+
+- **admin/**: Contains the SvelteKit and Bun code for the admin panel.
+  - **src/**: The main source code for the admin panel.
+  - **static/**: Static assets like images, fonts, etc.
+  - **tests/**: Tests for the admin panel.
+  - Configuration files and package managers.
+
+- **server/**: Contains the Rust and Actix code for the backend server.
+  - **src/**: The main source code for the backend server.
+  - **migrations/**: Database migration files.
+  - **tests/**: Tests for the backend server.
+  - Configuration files and package managers.
+
+- **docs/**: Documentation files, including API reference, guides, and tutorials.
+- **.gitignore**: Git ignore file for excluding unnecessary files from version control.
+- **README.md**: The project's main README file with installation instructions, usage examples, and other information.
+
 ## Features
 
 - **Blazing-Fast Performance**: Built with cutting-edge technologies like Rust, Actix, SvelteKit, and Bun, MercuryCMS offers unparalleled speed and responsiveness, ensuring a seamless user experience.
@@ -34,33 +54,28 @@ Follow the instructions below to get MercuryCMS up and running on your local mac
 git clone https://github.com/your-username/Mercury.git
 ```
 
-2. Install server-side dependencies:
-    1. Navigate to the backend directory:
-    ```bash
-    cd Mercury/server
-    ```
-    2. Install dependencies:
-    ```bash
-    cargo build
-    ```
-    3. Start backend server:
-    ```bash
-    cargo run
-    ``` 
+2. Navigate to the project directory:
+```bash
+cd Mercury
+```
 
-3. Install client-side dependencies:
-    1. Navigate to the frontend directory:
-    ```bash
-    cd Mercury/admin
-    ```
-    2. Install dependencies:
-    ```bash
-    bun install
-    ```
-    3. Start frontend server:
-    ```bash
-    bun run dev
-    ``` 
+3. Install server-side dependencies:
+```bash
+cd server
+cargo build
+```
+
+4. Install client-side dependencies:
+```bash
+cd ../admin
+bun install
+```
+
+5. Start the development server:
+```bash
+bun run start
+```
+The MercuryCMS admin panel should now be running locally at `http://localhost:3000`, and the backend server at `http://localhost:8000`.
 
 ## Contributing
 
