@@ -1,23 +1,23 @@
 use actix_web::middleware::Logger;
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
-use serde::Serialize;
+use actix_web::{get, App, HttpServer, Responder};
 
-#[derive(Serialize)]
-pub struct TestResponse {
-    status: String,
-    message: String,
-}
 
-#[get("/api/running")]
+
+#[get("/")]
 async fn test_api() -> impl Responder {
-    const MESSAGE: &str = "🚀 Server is running";
-
-    let response_json =&TestResponse {
-        status: "success".to_string(),
-        message: MESSAGE.to_string(),
-    };
-    HttpResponse::Ok().json(response_json)
+    let ascii_art = r#"
+     __  __                                   _____ __  __  _____ 
+    |  \/  |                                 / ____|  \/  |/ ____|
+    | \  / | ___ _ __ ___ _   _ _ __ _   _  | |    | \  / | (___  
+    | |\/| |/ _ \ '__/ __| | | | '__| | | | | |    | |\/| |\___ \ 
+    | |  | |  __/ | | (__| |_| | |  | |_| | | |____| |  | |____) |
+    |_|  |_|\___|_|  \___|\__,_|_|   \__, |  \_____|_|  |_|_____/ 
+                                      __/ |                       
+                                     |___/                        
+"#;
+    ascii_art.to_owned()
 }
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
