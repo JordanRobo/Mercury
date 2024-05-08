@@ -1,7 +1,6 @@
 use actix_web::middleware::Logger;
 use actix_web::{get, App, HttpServer, Responder};
-
-
+pub mod handlers;
 
 #[get("/")]
 async fn test_api() -> impl Responder {
@@ -32,6 +31,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(Logger::default())
             .service(test_api)
+            .service(web::scope("/api").configure(users))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
