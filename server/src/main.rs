@@ -13,12 +13,13 @@ mod messages;
 mod actors;
 mod db_models;
 mod schema;
+mod insertables;
 
 use db_utils::{get_pool, AppState, DbActor};
 use services::fetch_users;
 
 async fn index() -> HttpResponse {
-    HttpResponse::Ok().body("Welcome to Mercury CMS API Server 🌡️")
+    HttpResponse::Ok().body("Welcome to Mercury CMS API Server")
 }
 
 #[actix_web::main]
@@ -36,7 +37,9 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))
             .service(
                 web::scope("/api")
-                .service(fetch_users))
+                .service(fetch_users)
+            
+            )
     })
     .bind(("127.0.0.1", 2323))?
     .run()
