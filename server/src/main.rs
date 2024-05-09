@@ -1,39 +1,44 @@
-use actix_web::middleware::Logger;
-use actix_web::{get, App, HttpServer, Responder};
-pub mod handlers;
+use actix::SyncArbiter;
+use actix_web::{web::Data, App, HttpServer, HttpResponse, web};
+use dotenv::dotenv;
+use diesel::{
+    r2d2::{ConnectionManager, Pool},
+    PgConnection
+};
+use std::env;
 
-#[get("/")]
-async fn test_api() -> impl Responder {
-    let ascii_art = r#"
-     __  __                                   _____ __  __  _____ 
-    |  \/  |                                 / ____|  \/  |/ ____|
-    | \  / | ___ _ __ ___ _   _ _ __ _   _  | |    | \  / | (___  
-    | |\/| |/ _ \ '__/ __| | | | '__| | | | | |    | |\/| |\___ \ 
-    | |  | |  __/ | | (__| |_| | |  | |_| | | |____| |  | |____) |
-    |_|  |_|\___|_|  \___|\__,_|_|   \__, |  \_____|_|  |_|_____/ 
-                                      __/ |                       
-                                     |___/                        
-"#;
-    ascii_art.to_owned()
+mod services;
+mod db_utils;
+mod messages;
+mod actors;
+mod db_models;
+mod schema;
+
+use db_utils::{get_pool, AppState, DbActor};
+use services::fetch_users;
+
+async fn index() -> HttpResponse {
+    HttpResponse::Ok().body("Welcome to Mercury CMS API Server 🌡️")
 }
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "actix_web=info");
-    }
-    env_logger::init();
+    dotenv().ok();
+    let db_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool: Pool<ConnectionManager<PgConnection>> = get_pool(&db_url);
+    let db_addr = SyncArbiter::start(5, move || DbActor(pool.clone()));
 
     println!("🚀 Server started successfully");
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
-            .wrap(Logger::default())
-            .service(test_api)
-            .service(web::scope("/api").configure(users))
+            .app_data(Data::new(AppState { db: db_addr.clone() }))
+            .route("/", web::get().to(index))
+            .service(
+                web::scope("/api")
+                .service(fetch_users))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 2323))?
     .run()
     .await
 }
