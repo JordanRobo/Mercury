@@ -1,7 +1,7 @@
-use actix::{Actor, Addr, SyncContext};
+use actix::{ Actor, Addr, SyncContext };
 use diesel::{
     PgConnection,
-    r2d2::{ConnectionManager, Pool}
+    r2d2::{ ConnectionManager, Pool }
 };
 
 pub struct AppState {

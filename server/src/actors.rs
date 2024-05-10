@@ -2,10 +2,9 @@ use crate::db_models::User;
 use crate::db_utils::DbActor;
 use crate::schema::users::dsl::*;
 use crate::messages::{ FetchUser, CreateUser, UpdateUser, DeleteUser };
-use crate::insertables::{ NewUser, UserUpdated };
-use crate::services::update_user;
+use crate::insertables::NewUser;
 use actix::Handler;
-use diesel::{self, prelude::*};
+use diesel::{ self, prelude::* };
 
 impl Handler<FetchUser> for DbActor {
     type Result = QueryResult<Vec<User>>;
@@ -20,13 +19,13 @@ impl Handler<FetchUser> for DbActor {
 impl Handler<CreateUser> for DbActor {
     type Result = QueryResult<User>;
 
-    fn handle(&mut self, msg: CreateUser, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: CreateUser, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Failed to get connection");
         
         let new_user = NewUser {
-            firstname: msg.firstname,
-            lastname: msg.lastname,
-            email: msg.email
+            firstname: msg.firstname.unwrap_or("".to_string()),
+            lastname: msg.lastname.unwrap_or("".to_string()),
+            email: msg.email.unwrap_or("".to_string())
         };
         
         diesel::insert_into(users)
@@ -39,17 +38,16 @@ impl Handler<CreateUser> for DbActor {
 impl Handler<UpdateUser> for DbActor {
     type Result = QueryResult<User>;
 
-    fn handle(&mut self, msg: UpdateUser, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: UpdateUser, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Failed to get connection");
-        
-        let update_user = UserUpdated {
-            firstname: msg.firstname,
-            lastname: msg.lastname,
-            email: msg.email
-        };
-        
-        diesel::update(users.find(id))
-            .set([update_user])
+        let user = users.find(msg.id).get_result::<User>(&mut conn).expect("Failed to find user");
+
+        diesel::update(users.find(msg.id))
+            .set((
+                firstname.eq(msg.firstname.unwrap_or(user.firstname)),
+                lastname.eq(msg.lastname.unwrap_or(user.lastname)),
+                email.eq(msg.email.unwrap_or(user.email))
+            ))
             .returning((id, firstname, lastname, email))
             .get_result::<User>(&mut conn)
     }   
@@ -58,8 +56,9 @@ impl Handler<UpdateUser> for DbActor {
 impl Handler<DeleteUser> for DbActor {
     type Result = QueryResult<usize>;
 
-    fn handle(&mut self, msg: DeleteUser, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: DeleteUser, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Failed to get connection");
-        diesel::delete(users.find(msg.id)).execute(&mut conn)
+        diesel::delete(users.find(msg.id))
+        .execute(&mut conn)
     }
 }

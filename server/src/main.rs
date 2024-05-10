@@ -15,8 +15,8 @@ mod db_models;
 mod schema;
 mod insertables;
 
-use db_utils::{get_pool, AppState, DbActor};
-use services::fetch_users;
+use db_utils::{ get_pool, AppState, DbActor };
+use services::{ fetch_users, create_user, update_user, delete_user };
 
 async fn index() -> HttpResponse {
     HttpResponse::Ok().body("Welcome to Mercury CMS API Server")
@@ -38,6 +38,9 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                 .service(fetch_users)
+                .service(create_user)
+                .service(update_user)
+                .service(delete_user)
             
             )
     })

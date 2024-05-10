@@ -9,12 +9,3 @@ pub struct NewUser {
     pub lastname: String,
     pub email: String,
 }
-
-#[derive(Insertable, Serialize, Clone)]
-#[diesel(table_name=users)]
-pub struct UserUpdated {
-    pub id: i32,
-    pub firstname: String,
-    pub lastname: String,
-    pub email: String,
-}

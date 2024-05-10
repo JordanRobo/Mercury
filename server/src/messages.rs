@@ -9,18 +9,18 @@ pub struct FetchUser;
 #[derive(Message)]
 #[rtype(result = "QueryResult<User>")]
 pub struct CreateUser {
-    pub firstname: String,
-    pub lastname: String,
-    pub email: String
+    pub firstname: Option<String>,
+    pub lastname: Option<String>,
+    pub email: Option<String>
 }
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<User>")]
 pub struct UpdateUser {
     pub id: i32,
-    pub firstname: String,
-    pub lastname: String,
-    pub email: String
+    pub firstname: Option<String>,
+    pub lastname: Option<String>,
+    pub email: Option<String>
 }
 
 #[derive(Message)]
