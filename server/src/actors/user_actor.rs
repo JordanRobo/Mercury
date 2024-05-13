@@ -1,18 +1,27 @@
-use crate::db_models::User;
-use crate::db_utils::DbActor;
-use crate::schema::users::dsl::*;
-use crate::messages::{ FetchUser, CreateUser, UpdateUser, DeleteUser };
-use crate::insertables::NewUser;
+use crate::db::{ User, NewUser };
+use crate::db::DbActor;
+use crate::db::users::dsl::*;
+use crate::messages::{ FetchUsers, FetchUser, CreateUser, UpdateUser, DeleteUser };
 use actix::Handler;
 use diesel::{ self, prelude::* };
 
-impl Handler<FetchUser> for DbActor {
+impl Handler<FetchUsers> for DbActor {
     type Result = QueryResult<Vec<User>>;
 
-    fn handle(&mut self, _msg: FetchUser, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, _msg: FetchUsers, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Fetch User: Unable to establish connection");
 
         users.get_results::<User>(&mut conn)
+    }
+}
+
+impl Handler<FetchUser> for DbActor {
+    type Result = QueryResult<User>;
+
+    fn handle(&mut self, msg: FetchUser, _ctx: &mut Self::Context) -> Self::Result {
+        let mut conn = self.0.get().expect("Fetch User: Unable to establish connection");
+
+        users.find(msg.id).get_result::<User>(&mut conn)
     }
 }
 

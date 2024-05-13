@@ -3,10 +3,8 @@ use actix_web::{
 };
 use serde::Deserialize;
 use actix::Addr;
-use crate::{
-    messages::{ FetchUser, CreateUser, UpdateUser, DeleteUser },
-    AppState, DbActor
-};
+use crate::messages::{ FetchUsers, FetchUser, CreateUser, UpdateUser, DeleteUser };
+use crate::db::{ AppState, DbActor };
 
 #[derive(Deserialize)]
 pub struct UserBody {
@@ -15,18 +13,33 @@ pub struct UserBody {
     pub email: Option<String>
 }
 
-#[get("/users")]
+#[get("")]
 pub async fn fetch_users(state: Data<AppState>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
 
-    match db.send(FetchUser).await {
+    match db.send(FetchUsers).await {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
         Ok(Err(_)) => HttpResponse::NotFound().json("No users found"),
         _ => HttpResponse::InternalServerError().json("Unable to retrieve users"),
     }
 }
 
-#[post("/users")]
+#[get("/{id}")]
+pub async fn fetch_user(state: Data<AppState>, id: Path<i32>) -> impl Responder {
+    let db: Addr<DbActor> = state.as_ref().db.clone();
+
+    match db.send(FetchUser { 
+        id: id.into_inner() 
+    }).await 
+    {
+        Ok(Ok(info)) => HttpResponse::Ok().json(info),
+        Ok(Err(_)) => HttpResponse::NotFound().json("User not found"),
+        _ => HttpResponse::InternalServerError().json("Unable to retrieve user"),
+    }
+}
+
+
+#[post("")]
 pub async fn create_user(state: Data<AppState>, body: Json<UserBody>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(CreateUser { 
@@ -40,7 +53,7 @@ pub async fn create_user(state: Data<AppState>, body: Json<UserBody>) -> impl Re
     }
 }
 
-#[patch("/users/{id}")]
+#[patch("/{id}")]
 pub async fn update_user(state: Data<AppState>, body: Json<UserBody>, id: Path<i32>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(UpdateUser { 
@@ -55,7 +68,7 @@ pub async fn update_user(state: Data<AppState>, body: Json<UserBody>, id: Path<i
     }
 }
 
-#[delete("/users/{id}")]
+#[delete("/{id}")]
 pub async fn delete_user(state: Data<AppState>, id: Path<i32>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(DeleteUser { 

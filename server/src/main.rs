@@ -1,3 +1,8 @@
+mod db;
+mod messages;
+mod api;
+mod actors;
+
 use actix::SyncArbiter;
 use actix_web::{web::Data, App, HttpServer, HttpResponse, web};
 use dotenv::dotenv;
@@ -6,20 +11,12 @@ use diesel::{
     PgConnection
 };
 use std::env;
+use db::{ get_pool, AppState, DbActor };
+use api::user_config;
 
-mod services;
-mod db_utils;
-mod messages;
-mod actors;
-mod db_models;
-mod schema;
-mod insertables;
-
-use db_utils::{ get_pool, AppState, DbActor };
-use services::{ fetch_users, create_user, update_user, delete_user };
 
 async fn index() -> HttpResponse {
-    HttpResponse::Ok().body("Welcome to Mercury CMS API Server")
+    HttpResponse::Ok().body("Welcome to Mercury CMS API Server 🚀")
 }
 
 #[actix_web::main]
@@ -37,11 +34,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))
             .service(
                 web::scope("/api")
-                .service(fetch_users)
-                .service(create_user)
-                .service(update_user)
-                .service(delete_user)
-            
+                .configure(user_config)
             )
     })
     .bind(("127.0.0.1", 2323))?

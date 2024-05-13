@@ -1,6 +1,6 @@
 [package]
-name = "Mercury Backend"
-version = "0.2.0"
+name = "mercurycms"
+version = "0.2.3"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
