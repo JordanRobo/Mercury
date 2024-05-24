@@ -4,7 +4,7 @@
 
 
 @layer base {
-  :root {
+:root {
     --gradient: linear-gradient(to top left,#50C9C3,#96DEDA);
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -26,9 +26,9 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
-  }
+}
 
-  .dark {
+.dark {
     --gradient: linear-gradient(to top left,#50C9C3,#96DEDA);
     --background: 188 34.45% 4.4%;
     --foreground: 188 5.300000000000001% 97.75%;
@@ -49,14 +49,14 @@
     --border: 188 26.5% 16.5%;
     --input: 188 26.5% 16.5%;
     --ring: 188 53% 55%;
-  }
+    }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }

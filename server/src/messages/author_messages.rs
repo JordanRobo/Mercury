@@ -1,28 +1,28 @@
-use crate::db::User;
+use crate::db::Author;
 use actix::Message;
 use diesel::QueryResult;
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<Vec<User>>")]
-pub struct FetchUsers;
+#[rtype(result = "QueryResult<Vec<Author>>")]
+pub struct FetchAuthors;
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<User>")]
-pub struct FetchUser {
+#[rtype(result = "QueryResult<Author>")]
+pub struct FetchAuthor {
     pub id: i32,
 }
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<User>")]
-pub struct CreateUser {
+#[rtype(result = "QueryResult<Author>")]
+pub struct CreateAuthor {
     pub firstname: Option<String>,
     pub lastname: Option<String>,
     pub email: Option<String>
 }
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<User>")]
-pub struct UpdateUser {
+#[rtype(result = "QueryResult<Author>")]
+pub struct UpdateAuthor {
     pub id: i32,
     pub firstname: Option<String>,
     pub lastname: Option<String>,
@@ -31,6 +31,6 @@ pub struct UpdateUser {
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<usize>")]
-pub struct DeleteUser {
+pub struct DeleteAuthor {
     pub id: i32,
 }

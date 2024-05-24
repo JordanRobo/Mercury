@@ -3,60 +3,60 @@ use actix_web::{
 };
 use serde::Deserialize;
 use actix::Addr;
-use crate::messages::{ FetchUsers, FetchUser, CreateUser, UpdateUser, DeleteUser };
+use crate::messages::{ FetchAuthor, FetchAuthors, CreateAuthor, UpdateAuthor, DeleteAuthor };
 use crate::db::{ AppState, DbActor };
 
 #[derive(Deserialize)]
-pub struct UserBody {
+pub struct AuthorBody {
     pub firstname: Option<String>,
     pub lastname: Option<String>,
     pub email: Option<String>
 }
 
 #[get("")]
-pub async fn fetch_users(state: Data<AppState>) -> impl Responder {
+pub async fn fetch_authors(state: Data<AppState>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
 
-    match db.send(FetchUsers).await {
+    match db.send(FetchAuthors).await {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
-        Ok(Err(_)) => HttpResponse::NotFound().json("No users found"),
-        _ => HttpResponse::InternalServerError().json("Unable to retrieve users"),
+        Ok(Err(_)) => HttpResponse::NotFound().json("No authors found"),
+        _ => HttpResponse::InternalServerError().json("Unable to retrieve authors"),
     }
 }
 
 #[get("/{id}")]
-pub async fn fetch_user(state: Data<AppState>, id: Path<i32>) -> impl Responder {
+pub async fn fetch_author(state: Data<AppState>, id: Path<i32>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
 
-    match db.send(FetchUser { 
+    match db.send(FetchAuthor { 
         id: id.into_inner() 
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
-        Ok(Err(_)) => HttpResponse::NotFound().json("User not found"),
-        _ => HttpResponse::InternalServerError().json("Unable to retrieve user"),
+        Ok(Err(_)) => HttpResponse::NotFound().json("Author not found"),
+        _ => HttpResponse::InternalServerError().json("Unable to retrieve author"),
     }
 }
 
 
 #[post("")]
-pub async fn create_user(state: Data<AppState>, body: Json<UserBody>) -> impl Responder {
+pub async fn create_author(state: Data<AppState>, body: Json<AuthorBody>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
-    match db.send(CreateUser { 
+    match db.send(CreateAuthor { 
         firstname: body.firstname.clone(),
         lastname: body.lastname.clone(),
         email: body.email.clone()
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
-        _ => HttpResponse::InternalServerError().json("Failed to create user"),
+        _ => HttpResponse::InternalServerError().json("Failed to create author"),
     }
 }
 
 #[patch("/{id}")]
-pub async fn update_user(state: Data<AppState>, body: Json<UserBody>, id: Path<i32>) -> impl Responder {
+pub async fn update_author(state: Data<AppState>, body: Json<AuthorBody>, id: Path<i32>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
-    match db.send(UpdateUser { 
+    match db.send(UpdateAuthor { 
         id: id.into_inner(),
         firstname: body.firstname.clone(),
         lastname: body.lastname.clone(),
@@ -64,18 +64,18 @@ pub async fn update_user(state: Data<AppState>, body: Json<UserBody>, id: Path<i
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
-        _ => HttpResponse::InternalServerError().json("Failed to update user"),
+        _ => HttpResponse::InternalServerError().json("Failed to update author"),
     }
 }
 
 #[delete("/{id}")]
-pub async fn delete_user(state: Data<AppState>, id: Path<i32>) -> impl Responder {
+pub async fn delete_author(state: Data<AppState>, id: Path<i32>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
-    match db.send(DeleteUser { 
+    match db.send(DeleteAuthor { 
         id: id.into_inner() 
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
-        _ => HttpResponse::InternalServerError().json("Failed to delete user"),
+        _ => HttpResponse::InternalServerError().json("Failed to delete author"),
     }
 }

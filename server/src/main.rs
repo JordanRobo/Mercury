@@ -12,7 +12,7 @@ use diesel::{
 };
 use std::env;
 use db::{ get_pool, AppState, DbActor };
-use api::user_config;
+use api::{ author_config, post_config };
 
 
 async fn index() -> HttpResponse {
@@ -34,7 +34,8 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))
             .service(
                 web::scope("/api")
-                .configure(user_config)
+                .configure(author_config)
+                .configure(post_config)
             )
     })
     .bind(("127.0.0.1", 2323))?

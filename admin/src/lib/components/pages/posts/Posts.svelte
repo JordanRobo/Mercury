@@ -5,8 +5,12 @@
     import * as Card from "$lib/components/ui/card/index.js";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import * as Table from "$lib/components/ui/table";
+	import { goto } from "$app/navigation";
 
-    export let posts: {id: string, title: string, status: string, author: string}[];
+    export let posts: {id: string, title: string, published: boolean, author: string}[];
+	export let lower: number;
+	export let upper: number;
+	export let total: number;
 </script>
 
 <main class="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
@@ -18,9 +22,6 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="hidden w-[100px] sm:table-cell">
-						<span class="sr-only">Image</span>
-					</Table.Head>
 					<Table.Head>Title</Table.Head>
 					<Table.Head>Status</Table.Head>
 					<Table.Head>Author</Table.Head>
@@ -32,12 +33,15 @@
 			<Table.Body>
                 {#each posts as post (post.id)}
 				<Table.Row>
-					<Table.Cell class="hidden sm:table-cell">
-						<img alt="Product example" class="aspect-square rounded-md object-cover" height="64" src="/images/placeholder.svg" width="64" />
-					</Table.Cell>
 					<Table.Cell class="font-medium">{post.title}</Table.Cell>
 					<Table.Cell>
-						<Badge variant="outline">{post.status}</Badge>
+						<Badge variant="outline">
+							{#if post.published}
+								Published
+							{:else}
+								Draft
+							{/if}
+						</Badge>
 					</Table.Cell>
 					<Table.Cell>{post.author}</Table.Cell>
 					<Table.Cell>
@@ -55,7 +59,7 @@
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="end">
 								<DropdownMenu.Label>Actions</DropdownMenu.Label>
-								<DropdownMenu.Item>Edit</DropdownMenu.Item>
+								<DropdownMenu.Item on:click={() => goto(`/posts/${post.id}`)}>Edit</DropdownMenu.Item>
 								<DropdownMenu.Item>Delete</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
@@ -67,7 +71,7 @@
 	</Card.Content>
 	<Card.Footer>
 		<div class="text-xs text-muted-foreground">
-			Showing <strong>1-10</strong> of <strong>32</strong> products
+			Showing <strong>{lower}-{upper}</strong> of <strong>{total}</strong> posts
 		</div>
 	</Card.Footer>
 </Card.Root>

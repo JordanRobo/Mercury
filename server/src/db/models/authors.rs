@@ -5,7 +5,7 @@ use diesel::Queryable;
 use serde::Serialize;
 
 #[derive(Queryable, Debug, Serialize)]
-pub struct User {
+pub struct Author {
     pub id: i32,
     pub firstname: String,
     pub lastname: String,
