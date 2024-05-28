@@ -15,18 +15,20 @@ pub struct FetchAuthor {
 #[derive(Message)]
 #[rtype(result = "QueryResult<Author>")]
 pub struct CreateAuthor {
-    pub firstname: Option<String>,
-    pub lastname: Option<String>,
-    pub email: Option<String>
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub bio: Option<String>,
+    pub profile_picture: Option<String>
 }
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<Author>")]
 pub struct UpdateAuthor {
     pub id: i32,
-    pub firstname: Option<String>,
-    pub lastname: Option<String>,
-    pub email: Option<String>
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub bio: Option<String>,
+    pub profile_picture: Option<String>
 }
 
 #[derive(Message)]

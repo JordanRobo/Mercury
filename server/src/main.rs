@@ -1,7 +1,7 @@
-mod actors;
 mod api;
 mod db;
 mod messages;
+mod actors;
 
 use actix::SyncArbiter;
 use actix_web::{web::Data, App, HttpServer, HttpResponse, web};

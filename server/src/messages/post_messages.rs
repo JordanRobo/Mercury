@@ -1,13 +1,13 @@
-use crate::db::Post;
+use crate::db::*;
 use actix::Message;
 use diesel::QueryResult;
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<Vec<Post>>")]
+#[rtype(result = "QueryResult<Vec<(Post, Author, Vec<Tag>)>>")]
 pub struct FetchPosts;
 
 #[derive(Message)]
-#[rtype(result = "QueryResult<Post>")]
+#[rtype(result = "QueryResult<(Post, Author, Vec<Tag>)>")]
 pub struct FetchPost {
     pub id: i32,
 }
@@ -16,8 +16,12 @@ pub struct FetchPost {
 #[rtype(result = "QueryResult<Post>")]
 pub struct CreatePost {
     pub title: Option<String>,
+    pub slug: Option<String>,
     pub content: Option<String>,
-    pub authorid: Option<i32>
+    pub feature_image: Option<String>,
+    pub excerpt: Option<String>,
+    pub published: Option<bool>,
+    pub author_id: i32
 }
 
 #[derive(Message)]
@@ -25,13 +29,22 @@ pub struct CreatePost {
 pub struct UpdatePost {
     pub id: i32,
     pub title: Option<String>,
+    pub slug: Option<String>,
     pub content: Option<String>,
-    pub authorid: Option<i32>,
-    pub published: Option<bool>
+    pub feature_image: Option<String>,
+    pub excerpt: Option<String>,
+    pub published: Option<bool>,
+    pub author_id: i32
 }
 
 #[derive(Message)]
 #[rtype(result = "QueryResult<usize>")]
 pub struct DeletePost {
     pub id: i32,
+}
+
+#[derive(Message)]
+#[rtype(result = "QueryResult<usize>")]
+pub struct DeletePosts {
+    pub ids: Vec<i32>,
 }

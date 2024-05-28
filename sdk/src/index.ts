@@ -1,3 +1,3 @@
-import PostsAPI from "./posts/posts";
+import MercuryClient from './client';
 
-export { PostsAPI };
+export default MercuryClient;

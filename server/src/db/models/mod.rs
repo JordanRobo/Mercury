@@ -1,7 +1,5 @@
-pub mod authors;
-pub mod posts;
+pub mod models;
 pub mod insertables;
 
-pub use authors::Author;
-pub use posts::Post;
-pub use insertables::{ NewAuthor, NewPost };
+pub use models::{ Author, Post, Tag, PostTag };
+pub use insertables::{ NewAuthor, NewPost, NewTag };

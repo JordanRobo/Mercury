@@ -9,9 +9,12 @@ use crate::db::{ AppState, DbActor };
 #[derive(Deserialize)]
 pub struct PostBody {
     pub title: Option<String>,
+    pub slug: Option<String>,
     pub content: Option<String>,
-    pub authorid: Option<i32>,
-    pub published: Option<bool>
+    pub feature_image: Option<String>,
+    pub excerpt: Option<String>,
+    pub published: Option<bool>,
+    pub author_id: i32,
 }
 
 #[get("")]
@@ -39,14 +42,17 @@ pub async fn fetch_post(state: Data<AppState>, id: Path<i32>) -> impl Responder 
     }
 }
 
-
 #[post("")]
 pub async fn create_post(state: Data<AppState>, body: Json<PostBody>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(CreatePost { 
         title: body.title.clone(),
+        slug: body.slug.clone(),
         content: body.content.clone(),
-        authorid: body.authorid.clone()
+        feature_image: body.feature_image.clone(),
+        excerpt: body.excerpt.clone(),
+        published: body.published,
+        author_id: body.author_id,
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
@@ -60,9 +66,12 @@ pub async fn update_post(state: Data<AppState>, body: Json<PostBody>, id: Path<i
     match db.send(UpdatePost { 
         id: id.into_inner(),
         title: body.title.clone(),
+        slug: body.slug.clone(),
         content: body.content.clone(),
-        authorid: body.authorid.clone() ,
-        published: body.published.clone()
+        feature_image: body.feature_image.clone(),
+        excerpt: body.excerpt.clone(),
+        published: body.published,
+        author_id: body.author_id,
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),

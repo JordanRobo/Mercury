@@ -11,7 +11,7 @@ impl Handler<FetchAuthors> for DbActor {
     fn handle(&mut self, _msg: FetchAuthors, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Fetch Author: Unable to establish connection");
 
-        authors.get_results::<Author>(&mut conn)
+        authors.get_results(&mut conn)
     }
 }
 
@@ -21,7 +21,7 @@ impl Handler<FetchAuthor> for DbActor {
     fn handle(&mut self, msg: FetchAuthor, _ctx: &mut Self::Context) -> Self::Result {
         let mut conn = self.0.get().expect("Fetch User: Unable to establish connection");
 
-        authors.find(msg.id).get_result::<Author>(&mut conn)
+        authors.find(msg.id).get_result(&mut conn)
     }
 }
 
@@ -32,15 +32,15 @@ impl Handler<CreateAuthor> for DbActor {
         let mut conn = self.0.get().expect("Failed to get connection");
         
         let new_author = NewAuthor {
-            firstname: msg.firstname.unwrap_or("".to_string()),
-            lastname: msg.lastname.unwrap_or("".to_string()),
-            email: msg.email.unwrap_or("".to_string())
+            name: msg.name.unwrap_or("".to_string()),
+            email: msg.email.unwrap_or("".to_string()),
+            bio: msg.bio,
+            profile_picture: msg.profile_picture
         };
         
         diesel::insert_into(authors)
             .values(new_author)
-            .returning((id, firstname, lastname, email))
-            .get_result::<Author>(&mut conn)
+            .get_result(&mut conn)
     }
 }
 
@@ -53,12 +53,12 @@ impl Handler<UpdateAuthor> for DbActor {
 
         diesel::update(authors.find(msg.id))
             .set((
-                firstname.eq(msg.firstname.unwrap_or(user.firstname)),
-                lastname.eq(msg.lastname.unwrap_or(user.lastname)),
-                email.eq(msg.email.unwrap_or(user.email))
+                name.eq(msg.name.unwrap_or(user.name)),
+                email.eq(msg.email.unwrap_or(user.email)),
+                bio.eq(msg.bio.or(user.bio)),
+                profile_picture.eq(msg.profile_picture.or(user.profile_picture))
             ))
-            .returning((id, firstname, lastname, email))
-            .get_result::<Author>(&mut conn)
+            .get_result(&mut conn)
     }   
 }
 

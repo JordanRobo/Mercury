@@ -8,9 +8,10 @@ use crate::db::{ AppState, DbActor };
 
 #[derive(Deserialize)]
 pub struct AuthorBody {
-    pub firstname: Option<String>,
-    pub lastname: Option<String>,
-    pub email: Option<String>
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub bio: Option<String>,
+    pub profile_picture: Option<String>,
 }
 
 #[get("")]
@@ -43,9 +44,10 @@ pub async fn fetch_author(state: Data<AppState>, id: Path<i32>) -> impl Responde
 pub async fn create_author(state: Data<AppState>, body: Json<AuthorBody>) -> impl Responder {
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(CreateAuthor { 
-        firstname: body.firstname.clone(),
-        lastname: body.lastname.clone(),
-        email: body.email.clone()
+        name: body.name.clone(),
+        email: body.email.clone(),
+        bio: body.bio.clone(),
+        profile_picture: body.profile_picture.clone()
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
@@ -58,9 +60,10 @@ pub async fn update_author(state: Data<AppState>, body: Json<AuthorBody>, id: Pa
     let db: Addr<DbActor> = state.as_ref().db.clone();
     match db.send(UpdateAuthor { 
         id: id.into_inner(),
-        firstname: body.firstname.clone(),
-        lastname: body.lastname.clone(),
-        email: body.email.clone() 
+        name: body.name.clone(),
+        email: body.email.clone(),
+        bio: body.bio.clone(), 
+        profile_picture: body.profile_picture.clone()
     }).await 
     {
         Ok(Ok(info)) => HttpResponse::Ok().json(info),
