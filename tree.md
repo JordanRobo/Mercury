@@ -1,28 +1,18 @@
 
 ├── src/
-│   ├── actors/
+│   ├── handlers/
 │   │   ├── mod.rs
-│   │   ├── author_actors.rs
-│   │   ├── post_actors.rs
-│   │   └── tag_actors.rs
-│   ├── api/ 
+│   │   └── post_handlers.rs
+│   ├── services/ 
 │   │   ├── mod.rs
 │   │   ├── config.rs 
-│   │   ├── author_endpoints.rs
-│   │   ├── post_endpoints.rs
-│   │   └── tag_endpoints.rs
+│   │   └── post_api.rs
 │   ├── db/
-│   │   ├── models/ 
-│   │   │   ├── mod.rs
-│   │   │   ├── insertables.rs
-│   │   │   └── models.rs
 │   │   ├── mod.rs
 │   │   ├── connection.rs
 │   │   └── schema.rs
-│   ├── messages/
+│   ├── models/
 │   │   ├── mod.rs
-│   │   ├── author_messages.rs
-│   │   ├── post_messages.rs
-│   │   └── tag_messages.rs
+│   │   └── models.rs
 │   └── main.rs
 └── ...

@@ -1,20 +1,14 @@
-use actix::{ Actor, Addr, SyncContext };
-use diesel::{
-    PgConnection,
-    r2d2::{ ConnectionManager, Pool }
-};
+use diesel::pg::PgConnection;
+use diesel::r2d2::{self, ConnectionManager};
+use dotenv::dotenv;
 
-pub struct AppState {
-    pub db: Addr<DbActor>
-}
+pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
-pub struct DbActor(pub Pool<ConnectionManager<PgConnection>>);
-
-impl Actor for DbActor {
-    type Context = SyncContext<Self>;
-}
-
-pub fn get_pool(db_url: &str) -> Pool<ConnectionManager<PgConnection>> {
-    let manager: ConnectionManager<PgConnection> = ConnectionManager::<PgConnection>::new(db_url);
-    Pool::builder().build(manager).expect("Error building a connection pool")
+pub fn establish_connection() -> DbPool {
+    dotenv().ok();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.")
 }

@@ -1,43 +1,40 @@
-mod api;
 mod db;
-mod messages;
-mod actors;
+mod models;
+mod handlers;
+mod services;
 
-use actix::SyncArbiter;
-use actix_web::{web::Data, App, HttpServer, HttpResponse, web};
-use dotenv::dotenv;
-use diesel::{
-    r2d2::{ConnectionManager, Pool},
-    PgConnection
-};
-use std::env;
-use db::{ get_pool, AppState, DbActor };
-use api::{ author_config, post_config };
+use actix_web::{ App, HttpServer, HttpResponse, web, Result };
+use serde::Serialize;
+use services::post_config;
 
+#[derive(Serialize)]
+pub struct Response {
+    pub message: String,
+}
 
 async fn index() -> HttpResponse {
     HttpResponse::Ok().body("Welcome to Mercury CMS API Server 🚀")
 }
 
+async fn not_found() -> Result<HttpResponse> {
+    let response = Response {
+        message: "Resource not found".to_string(),
+    };
+    Ok(HttpResponse::NotFound().json(response))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
-    let db_url: String = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool: Pool<ConnectionManager<PgConnection>> = get_pool(&db_url);
-    let db_addr = SyncArbiter::start(5, move || DbActor(pool.clone()));
+    let db = db::establish_connection();
+    let app_data = web::Data::new(db);
 
-    println!("🚀 Server started successfully");
-
-    HttpServer::new(move || {
+    HttpServer::new(move || 
         App::new()
-            .app_data(Data::new(AppState { db: db_addr.clone() }))
+            .app_data(app_data.clone())
             .route("/", web::get().to(index))
-            .service(
-                web::scope("/api")
-                .configure(author_config)
-                .configure(post_config)
-            )
-    })
+            .default_service(web::route().to(not_found))
+            .configure(post_config)
+    )
     .bind(("127.0.0.1", 2323))?
     .run()
     .await
