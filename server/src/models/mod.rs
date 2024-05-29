@@ -1,4 +1,3 @@
 pub mod models;
-pub mod insertables;
 
-pub use models::Post;
+pub use models::*;

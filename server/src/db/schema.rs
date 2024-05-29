@@ -4,9 +4,9 @@ diesel::table! {
     authors (id) {
         id -> Int4,
         #[max_length = 255]
-        name -> Varchar,
+        name -> Nullable<Varchar>,
         #[max_length = 255]
-        email -> Varchar,
+        email -> Nullable<Varchar>,
         bio -> Nullable<Text>,
         #[max_length = 255]
         profile_picture -> Nullable<Varchar>,
@@ -24,15 +24,15 @@ diesel::table! {
     posts (id) {
         id -> Int4,
         #[max_length = 255]
-        title -> Varchar,
+        title -> Nullable<Varchar>,
         #[max_length = 255]
-        slug -> Varchar,
-        content -> Text,
+        slug -> Nullable<Varchar>,
+        content -> Nullable<Text>,
         #[max_length = 255]
         feature_image -> Nullable<Varchar>,
         excerpt -> Nullable<Text>,
         published -> Nullable<Bool>,
-        author_id -> Int4,
+        author_id -> Nullable<Int4>,
     }
 }
 
@@ -40,15 +40,15 @@ diesel::table! {
     tags (id) {
         id -> Int4,
         #[max_length = 255]
-        title -> Varchar,
+        name -> Nullable<Varchar>,
         #[max_length = 255]
-        slug -> Varchar,
+        slug -> Nullable<Varchar>,
     }
 }
 
-diesel::joinable!(posts -> authors (author_id));
 diesel::joinable!(post_tags -> posts (post_id));
 diesel::joinable!(post_tags -> tags (tag_id));
+diesel::joinable!(posts -> authors (author_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     authors,

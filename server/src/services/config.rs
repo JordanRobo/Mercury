@@ -6,5 +6,8 @@ pub fn post_config(cfg: &mut web::ServiceConfig) {
         web::scope("/api")
             .service(get_posts)
             .service(get_post)
+            .service(create_post)
+            .service(update_post)
+            .service(delete_post)
     );
 }

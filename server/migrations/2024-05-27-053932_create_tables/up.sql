@@ -1,38 +1,37 @@
--- Your SQL goes here
--- Create the Authors table
+-- Create the authors table
 CREATE TABLE authors (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    bio TEXT,
-    profile_picture VARCHAR(255)
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) DEFAULT '',
+  email VARCHAR(255) DEFAULT '',
+  bio TEXT DEFAULT '',
+  profile_picture VARCHAR(255) DEFAULT ''
 );
 
--- Create the Tags table
+-- Create the tags table
 CREATE TABLE tags (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) DEFAULT '',
+  slug VARCHAR(255) DEFAULT ''
 );
 
--- Create the Posts table
+-- Create the posts table
 CREATE TABLE posts (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    content TEXT NOT NULL,
-    feature_image VARCHAR(255),
-    excerpt TEXT,
-    published BOOLEAN DEFAULT false,
-    author_id INTEGER REFERENCES authors(id),
-    FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) DEFAULT '',
+  slug VARCHAR(255) DEFAULT '',
+  content TEXT DEFAULT '',
+  feature_image VARCHAR(255) DEFAULT '',
+  excerpt TEXT DEFAULT '',
+  published BOOLEAN DEFAULT FALSE,
+  author_id INT,
+  FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
 );
 
--- Create the PostTags table (many-to-many relationship)
+-- Create the post_tags table for the many-to-many relationship between posts and tags
 CREATE TABLE post_tags (
-    post_id INTEGER REFERENCES posts(id),
-    tag_id INTEGER REFERENCES tags(id),
-    PRIMARY KEY (post_id, tag_id),
-    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+  post_id INT,
+  tag_id INT,
+  PRIMARY KEY (post_id, tag_id),
+  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
