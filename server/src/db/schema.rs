@@ -2,7 +2,8 @@
 
 diesel::table! {
     authors (id) {
-        id -> Int4,
+        #[max_length = 20]
+        id -> Varchar,
         #[max_length = 255]
         name -> Nullable<Varchar>,
         #[max_length = 255]
@@ -15,14 +16,17 @@ diesel::table! {
 
 diesel::table! {
     post_tags (post_id, tag_id) {
-        post_id -> Int4,
-        tag_id -> Int4,
+        #[max_length = 20]
+        post_id -> Varchar,
+        #[max_length = 20]
+        tag_id -> Varchar,
     }
 }
 
 diesel::table! {
     posts (id) {
-        id -> Int4,
+        #[max_length = 20]
+        id -> Varchar,
         #[max_length = 255]
         title -> Nullable<Varchar>,
         #[max_length = 255]
@@ -32,13 +36,15 @@ diesel::table! {
         feature_image -> Nullable<Varchar>,
         excerpt -> Nullable<Text>,
         published -> Nullable<Bool>,
-        author_id -> Nullable<Int4>,
+        #[max_length = 20]
+        author_id -> Nullable<Varchar>,
     }
 }
 
 diesel::table! {
     tags (id) {
-        id -> Int4,
+        #[max_length = 20]
+        id -> Varchar,
         #[max_length = 255]
         name -> Nullable<Varchar>,
         #[max_length = 255]

@@ -8,7 +8,7 @@ use crate::db::schema::*;
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = authors)]
 pub struct Author {
-    pub id: i32,
+    pub id: String,
     pub name: Option<String>,
     pub email: Option<String>,
     pub bio: Option<String>,
@@ -21,8 +21,8 @@ pub struct Author {
 #[diesel(table_name = post_tags)]
 #[diesel(primary_key(post_id, tag_id))]
 pub struct PostTag {
-    pub post_id: i32,
-    pub tag_id: i32,
+    pub post_id: String,
+    pub tag_id: String,
 }
 
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Associations, Insertable, AsChangeset, Clone)]
@@ -30,14 +30,14 @@ pub struct PostTag {
 #[diesel(table_name = posts)]
 pub struct Post {
     #[serde(default)]
-    pub id: i32,
+    pub id: String,
     pub title: Option<String>,
     pub slug: Option<String>,
     pub content: Option<String>,
     pub feature_image: Option<String>,
     pub excerpt: Option<String>,
     pub published: Option<bool>,
-    pub author_id: Option<i32>,
+    pub author_id: Option<String>,
 }
 
 #[derive(Insertable, Deserialize, AsChangeset)]
@@ -49,13 +49,13 @@ pub struct NewPost {
     pub feature_image: Option<String>,
     pub excerpt: Option<String>,
     pub published: Option<bool>,
-    pub author_id: Option<i32>,
+    pub author_id: Option<String>,
 }
 
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = tags)]
 pub struct Tag {
-    pub id: i32,
+    pub id: String,
     pub name: Option<String>,
     pub slug: Option<String>,
 }

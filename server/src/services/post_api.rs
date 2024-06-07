@@ -10,7 +10,7 @@ pub async fn get_posts(pool: Data<DbPool>) -> HttpResponse {
 }
 
 #[get("/posts/{id}")]
-pub async fn get_post(pool: Data<DbPool>, id: Path<i32>) -> HttpResponse {
+pub async fn get_post(pool: Data<DbPool>, id: Path<String>) -> HttpResponse {
     let post = get_post_by_id(&pool, id.into_inner()).await;
     match post {
         Some(post) => HttpResponse::Ok().json(post),
@@ -19,7 +19,7 @@ pub async fn get_post(pool: Data<DbPool>, id: Path<i32>) -> HttpResponse {
 }
 
 #[post("/posts")]
-pub async fn create_post(pool: Data<DbPool>, body: Json<NewPost>) -> HttpResponse {
+pub async fn create_post(pool: Data<DbPool>, body: Json<Post>) -> HttpResponse {
     let post = create_new_post(&pool, body.into_inner()).await;
     match post {
         Ok(post) => HttpResponse::Ok().json(post),
@@ -28,7 +28,7 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<NewPost>) -> HttpRespons
 }
 
 #[patch("/posts/{id}")]
-pub async fn update_post(pool: Data<DbPool>, id: Path<i32>, body: Json<NewPost>) -> HttpResponse {
+pub async fn update_post(pool: Data<DbPool>, id: Path<String>, body: Json<NewPost>) -> HttpResponse {
     let post = update_existing_post(&pool, id.into_inner(), body.into_inner()).await;
     match post {
         Some(post) => HttpResponse::Ok().json(post),
@@ -37,7 +37,7 @@ pub async fn update_post(pool: Data<DbPool>, id: Path<i32>, body: Json<NewPost>)
 }
 
 #[delete("/posts/{id}")]
-pub async fn delete_post(pool: Data<DbPool>, id: Path<i32>) -> HttpResponse {
+pub async fn delete_post(pool: Data<DbPool>, id: Path<String>) -> HttpResponse {
     let post = delete_post_by_id(&pool, id.into_inner()).await;
     match post {
         Some(_) => HttpResponse::Ok().body("Post deleted"),

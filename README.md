@@ -1,6 +1,6 @@
-# MercuryCMS
+# Mercury CMS
 
-MercuryCMS is a high-performance headless Content Management System (CMS) designed to provide a lightning-fast and flexible backend solution for building highly customizable frontends. Inspired by the Roman god of speed and messengers, MercuryCMS delivers unparalleled performance and scalability, empowering developers to create exceptional digital experiences.
+Mercury CMS is a high-performance headless Content Management System (CMS) designed to provide a lightning-fast and flexible backend solution for building highly customizable frontends. Inspired by the Roman god of speed and messengers, MercuryCMS delivers unparalleled performance and scalability, empowering developers to create exceptional digital experiences.
 
 ## Project Structure
 
@@ -10,6 +10,11 @@ MercuryCMS follows a modular structure, separating the admin panel and backend s
   - **src/**: The main source code for the admin panel.
   - **static/**: Static assets like images, fonts, etc.
   - **tests/**: Tests for the admin panel.
+  - Configuration files and package managers.
+
+- **sdk/**: Contains the Bun and Typescript Client SDK.
+  - **src/**: The main source code for the SDK.
+  - **tests/**: Tests for the SDK.
   - Configuration files and package managers.
 
 - **server/**: Contains the Rust and Actix code for the backend server.
@@ -83,7 +88,10 @@ We welcome contributions from the community! If you'd like to contribute to Merc
 
 ## License
 
-MercuryCMS is released under the [MIT License](LICENSE).
+ Copyright (C) Mercury CMS - All Rights Reserved.
+ Unauthorized copying of this file, via any medium is strictly prohibited.
+ Written By Jordan Robinson <jordan@stateot.art>, June 2024.
+
 
 ## Acknowledgements
 
