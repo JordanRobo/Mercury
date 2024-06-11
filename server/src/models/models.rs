@@ -5,10 +5,20 @@ use diesel::prelude::*;
 use serde::{ Serialize, Deserialize };
 use crate::db::schema::*;
 
-#[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Insertable)]
+#[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Insertable, AsChangeset, Clone)]
 #[diesel(table_name = authors)]
 pub struct Author {
+    #[serde(default)]
     pub id: String,
+    pub name: Option<String>,
+    pub email: Option<String>,
+    pub bio: Option<String>,
+    pub profile_picture: Option<String>,
+}
+
+#[derive(Insertable, Deserialize, AsChangeset)]
+#[diesel(table_name = authors)]
+pub struct NewAuthor {
     pub name: Option<String>,
     pub email: Option<String>,
     pub bio: Option<String>,
@@ -26,7 +36,7 @@ pub struct PostTag {
 }
 
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Associations, Insertable, AsChangeset, Clone)]
-#[belongs_to(Author)]
+#[diesel(belongs_to(Author))]
 #[diesel(table_name = posts)]
 pub struct Post {
     #[serde(default)]
@@ -58,4 +68,11 @@ pub struct Tag {
     pub id: String,
     pub name: Option<String>,
     pub slug: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct PostWithAuthor {
+    #[serde(flatten)]
+    pub post: Post,
+    pub author: Option<Author>,
 }

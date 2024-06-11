@@ -1,11 +1,17 @@
-use actix_web::{ delete, get, patch, post, web::{ Data, Path, Json }, HttpResponse};
+use actix_web::{ delete, get, patch, post, web::{ Data, Path, Json, Query }, HttpResponse};
 use crate::handlers::{ get_all_posts, get_post_by_id, create_new_post, update_existing_post, delete_post_by_id };
 use crate::db::DbPool;
 use crate::models::*;
 
+#[derive(serde::Deserialize)]
+struct QueryParams {
+    author: Option<bool>,
+}
+
 #[get("/posts")]
-pub async fn get_posts(pool: Data<DbPool>) -> HttpResponse {
-    let posts = get_all_posts(&pool).await;
+pub async fn get_posts(pool: Data<DbPool>, query: Query<QueryParams>) -> HttpResponse {
+    let include_author = query.author.unwrap_or(false);
+    let posts = get_all_posts(&pool, include_author).await;
     HttpResponse::Ok().json(posts)
 }
 

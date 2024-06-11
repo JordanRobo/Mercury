@@ -1,13 +1,32 @@
 use crate::db::DbPool;
-use crate::models::*;  
+use crate::models::*;
 use actix_web::Error;
 use diesel::prelude::*;
 use crate::db::posts::dsl::*;
+use crate::db::authors::dsl::*;
 
-pub async fn get_all_posts(pool: &DbPool) -> Vec<Post> {
+
+pub async fn get_all_posts(pool: &DbPool, include_author: bool) -> Vec<PostWithAuthor> {
     let mut conn = pool.get().unwrap();
-    posts.load::<Post>(&mut conn).expect("Error loading posts")
+
+    if include_author {
+        posts
+            .left_join(authors)
+            .load::<(Post, Option<Author>)>(&mut conn)
+            .expect("Error loading posts")
+            .into_iter()
+            .map(|(post, author)| PostWithAuthor { post, author })
+            .collect()
+    } else {
+        posts
+            .load::<Post>(&mut conn)
+            .expect("Error loading posts")
+            .into_iter()
+            .map(|post| PostWithAuthor { post, author: None })
+            .collect()
+    }
 }
+
 
 pub async fn get_post_by_id(pool: &DbPool, post_id: String) -> Option<Post> {
     let mut conn = pool.get().unwrap();

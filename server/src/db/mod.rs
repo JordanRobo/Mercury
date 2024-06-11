@@ -2,4 +2,4 @@ pub mod schema;
 pub mod connection;
 
 pub use connection::{ establish_connection, DbPool };
-pub use schema::{ posts, authors, tags, post_tags };
+pub use schema::{ posts, authors };

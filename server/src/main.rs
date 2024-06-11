@@ -5,7 +5,7 @@ mod services;
 
 use actix_web::{ App, HttpServer, HttpResponse, web, Result };
 use serde::Serialize;
-use services::post_config;
+use services::*;
 
 #[derive(Serialize)]
 pub struct Response {
@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_data.clone())
             .route("/", web::get().to(index))
             .default_service(web::route().to(not_found))
-            .configure(post_config)
+            .configure(admin_config)
     )
     .bind(("127.0.0.1", 2323))?
     .run()
