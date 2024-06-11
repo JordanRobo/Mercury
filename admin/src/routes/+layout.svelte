@@ -1,25 +1,23 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { Badge } from "$lib/components/ui/badge/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
-    import * as Card from "$lib/components/ui/card/index.js";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
     import { Input } from "$lib/components/ui/input/index.js";
-
 	import { ModeWatcher } from "mode-watcher";
 	import { toggleMode } from "mode-watcher";
-	import {
-		ChatBubble, 
-		Home,
-		MagnifyingGlass,
-		MixerVertical,
-		Moon,
-		Pencil2, 
-		Person,   
-		Sun, 
-		Stack
-	} from 'svelte-radix';
+	import { ChatBubble, Home, MagnifyingGlass, MixerVertical, Moon, Pencil2, Person, Sun, Stack } from 'svelte-radix';
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+
+	function activePath(path: string, url: string) {
+		if (path === "/") {
+			return url === "/";
+		} else {
+			return url.startsWith(path);
+		}
+	};
 </script>
 
 <ModeWatcher />
@@ -35,35 +33,23 @@
 			</div>
 			<div class="flex-1">
 				<nav class="grid items-start px-2 text-sm font-medium lg:px-4">
-					<a href="/" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" >
+					<a href="/" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" class:text-primary={activePath("/", data.url)} class:bg-muted={activePath("/", data.url)}>
 						<Home class="h-4 w-4" />
 						Dashboard
 					</a>
-					<a href="/messages" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" >
+					<a href="/messages" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" class:text-primary={activePath("/messages", data.url)} class:bg-muted={activePath("/messages", data.url)}>
 						<ChatBubble class="h-4 w-4" />
 						Messages
-						<Badge class="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full" >6</Badge>
 					</a>
-					<a href="/posts" class="flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary" >
+					<a href="/posts" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" class:text-primary={activePath("/posts", data.url)} class:bg-muted={activePath("/posts", data.url)}>
 						<Pencil2 class="h-4 w-4" />
 						Posts
 					</a>
-					<a href="/settings" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" >
+					<a href="/settings" class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" class:text-primary={activePath("/settings", data.url)} class:bg-muted={activePath("/settings", data.url)}>
 						<MixerVertical class="h-4 w-4" />
 						Site Settings
 					</a>
 				</nav>
-			</div>
-			<div class="mt-auto p-4">
-				<Card.Root>
-					<Card.Header class="p-2 pt-0 md:p-4">
-						<Card.Title>Upgrade to Pro</Card.Title>
-						<Card.Description>Unlock all features and get unlimited access to our support team.</Card.Description>
-					</Card.Header>
-					<Card.Content class="p-2 pt-0 md:p-4 md:pt-0">
-						<Button size="sm" class="w-full">Upgrade</Button>
-					</Card.Content>
-				</Card.Root>
 			</div>
 		</div>
 	</div>

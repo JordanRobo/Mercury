@@ -7,7 +7,7 @@
     import * as Table from "$lib/components/ui/table";
 	import { goto } from "$app/navigation";
 
-    export let posts: {id: string, title: string, published: boolean, author: string}[];
+    export let posts: {id: string, title: string, published: boolean, author: { name: string }}[];
 	export let lower: number;
 	export let upper: number;
 	export let total: number;
@@ -43,7 +43,7 @@
 							{/if}
 						</Badge>
 					</Table.Cell>
-					<Table.Cell>{post.author}</Table.Cell>
+					<Table.Cell>{post.author.name}</Table.Cell>
 					<Table.Cell>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger asChild let:builder>

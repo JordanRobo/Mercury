@@ -50,8 +50,13 @@
 	}
 
     code {
+        background-color: rgba(#dad9d9, 0.1);
+        color: #06b6d4;
+    }
+
+    dark::code {
         background-color: rgba(#616161, 0.1);
-        color: #616161;
+        color: #06b6d4;
     }
 
     pre {
@@ -61,13 +66,13 @@
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
 
-    code {
-        color: inherit;
-        padding: 0;
-        background: none;
-        font-size: 0.8rem;
+        code {
+            color: inherit;
+            padding: 0;
+            background: none;
+            font-size: 0.8rem;
+        }
     }
-}
 
     img {
         max-width: 100%;
