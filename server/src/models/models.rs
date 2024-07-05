@@ -1,9 +1,8 @@
-#![allow(unused)]
-#![allow(clippy::all)]
-
 use diesel::prelude::*;
 use serde::{ Serialize, Deserialize };
 use crate::db::schema::*;
+
+pub type DbError = Box<dyn std::error::Error + Send + Sync>;
 
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq, Serialize, Deserialize, Insertable, AsChangeset, Clone)]
 #[diesel(table_name = authors)]
@@ -39,14 +38,13 @@ pub struct PostTag {
 #[diesel(belongs_to(Author))]
 #[diesel(table_name = posts)]
 pub struct Post {
-    #[serde(default)]
     pub id: String,
     pub title: Option<String>,
     pub slug: Option<String>,
     pub content: Option<String>,
     pub feature_image: Option<String>,
     pub excerpt: Option<String>,
-    pub published: Option<bool>,
+    pub published: Option<i32>,
     pub author_id: Option<String>,
 }
 
@@ -58,7 +56,7 @@ pub struct NewPost {
     pub content: Option<String>,
     pub feature_image: Option<String>,
     pub excerpt: Option<String>,
-    pub published: Option<bool>,
+    pub published: Option<i32>,
     pub author_id: Option<String>,
 }
 

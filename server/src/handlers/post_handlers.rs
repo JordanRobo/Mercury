@@ -1,72 +1,80 @@
-use crate::db::DbPool;
 use crate::models::*;
-use actix_web::Error;
 use diesel::prelude::*;
-use crate::db::posts::dsl::*;
-use crate::db::authors::dsl::*;
 
+pub fn get_all_posts(conn: &mut SqliteConnection, include_author: bool) -> Result<Vec<PostWithAuthor>, DbError> {
+    use crate::db::schema::{posts, authors};
+    use diesel::prelude::*;
 
-pub async fn get_all_posts(pool: &DbPool, include_author: bool) -> Vec<PostWithAuthor> {
-    let mut conn = pool.get().unwrap();
+    let query = posts::table
+        .left_join(authors::table)
+        .select((posts::all_columns, authors::all_columns.nullable()));
 
-    if include_author {
-        posts
-            .left_join(authors)
-            .load::<(Post, Option<Author>)>(&mut conn)
-            .expect("Error loading posts")
-            .into_iter()
-            .map(|(post, author)| PostWithAuthor { post, author })
-            .collect()
-    } else {
-        posts
-            .load::<Post>(&mut conn)
-            .expect("Error loading posts")
-            .into_iter()
-            .map(|post| PostWithAuthor { post, author: None })
-            .collect()
-    }
+    let results = query.load::<(Post, Option<Author>)>(conn)?;
+
+    Ok(results
+        .into_iter()
+        .map(|(post, author)| PostWithAuthor {
+            post,
+            author: if include_author { author } else { None },
+        })
+        .collect())
 }
 
+pub fn get_post_by_id(conn: &mut SqliteConnection, post_id: String) -> Result<Option<Post>, DbError> {
+    use crate::db::posts::dsl::*;
 
-pub async fn get_post_by_id(pool: &DbPool, post_id: String) -> Option<Post> {
-    let mut conn = pool.get().unwrap();
-    let query = posts
-        .find(post_id)
-        .get_result::<Post>(&mut conn)
-        .expect("Error loading post");
-    Some(query)
+    let post = posts
+        .filter(id.eq(post_id.to_string()))
+        .first::<Post>(conn)
+        .optional()?;
+
+    Ok(post)
 }
 
-pub async fn create_new_post(pool: &DbPool, post: Post) -> Result<Post, Error> {
-    let mut conn = pool.get().unwrap();
+pub fn create_new_post(conn: &mut SqliteConnection, new_post: NewPost) -> Result<Post, DbError> {
+    use crate::db::posts::dsl::*;
 
     let post = Post {
         id: xid::new().to_string(),
-        ..post
+        title: new_post.title,
+        slug: new_post.slug,
+        content: new_post.content,
+        feature_image: new_post.feature_image,
+        excerpt: new_post.excerpt,
+        published: new_post.published,
+        author_id: new_post.author_id,
     };
 
-    let query = diesel::insert_into(posts)
+    diesel::insert_into(posts)
         .values(&post)
-        .get_result::<Post>(&mut conn)
-        .expect("Error saving new post");
-    Ok(query)
+        .execute(conn)?;
+
+    Ok(post)
 }
 
-pub async fn update_existing_post(pool: &DbPool, post_id: String, post: NewPost) -> Option<Post> {
-    let mut conn = pool.get().unwrap();
+pub fn update_existing_post(conn: &mut SqliteConnection, post_id: String, post: NewPost) -> Result<Option<Post>, DbError> {
+    use crate::db::posts::dsl::*;
 
-    let updated_post = diesel::update(posts.find(post_id))
+    diesel::update(posts.find(post_id.clone()))
         .set(&post)
-        .get_result::<Post>(&mut conn)
-        .expect("Error updating post");
+        .execute(conn)?;
 
-    Some(updated_post)
+    let updated_post = posts.find(post_id)
+        .first(conn)
+        .optional()?;
+
+    Ok(updated_post)
 }
 
-pub async fn delete_post_by_id(pool: &DbPool, post_id: String) -> Option<usize> {
-    let mut conn = pool.get().unwrap();
+pub fn delete_post_by_id(conn: &mut SqliteConnection, post_id: String) -> Result<Option<usize>, DbError> {
+    use crate::db::posts::dsl::*;
+
     let query = diesel::delete(posts.find(post_id))
-        .execute(&mut conn)
-        .expect("Error deleting post");
-    Some(query)
+        .execute(conn)?;
+
+    if query > 0 {
+        Ok(Some(query))
+    } else {
+        Ok(None)
+    }
 }

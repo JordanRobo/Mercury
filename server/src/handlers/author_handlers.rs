@@ -1,53 +1,34 @@
-use crate::db::DbPool;
 use crate::models::*;  
-use actix_web::Error;
+use actix_web::Result;
 use diesel::prelude::*;
-use crate::db::authors::dsl::*;
 
-pub async fn get_all_authors(pool: &DbPool) -> Vec<Author> {
-    let mut conn = pool.get().unwrap();
-    authors.load::<Author>(&mut conn).expect("Error loading authors")
+// Needs Update
+pub fn get_all_authors(_conn: &mut SqliteConnection) -> Result<Vec<Author>, DbError> {
+    Ok(Vec::new())
 }
 
-pub async fn get_author_by_id(pool: &DbPool, author_id: String) -> Option<Author> {
-    let mut conn = pool.get().unwrap();
-    let query = authors
-        .find(author_id)
-        .get_result::<Author>(&mut conn)
-        .expect("Error loading author");
-    Some(query)
+// Needs Update
+pub fn get_author_by_id(_conn: &mut SqliteConnection, _author_id: String) -> Result<Option<Author>, DbError> {
+    Ok(None)
 }
 
-pub async fn create_new_author(pool: &DbPool, author: Author) -> Result<Author, Error> {
-    let mut conn = pool.get().unwrap();
+// Needs Update
+pub fn create_new_author(_conn: &mut SqliteConnection, author: Author) -> Result<Author, DbError> {
+    Ok(author)
+}  
 
-    let author = Author {
-        id: xid::new().to_string(),
-        ..author
-    };
-
-    let query = diesel::insert_into(authors)
-        .values(&author)
-        .get_result::<Author>(&mut conn)
-        .expect("Error saving new author");
-    Ok(query)
+// Needs Update
+pub fn update_existing_author(_conn: &mut SqliteConnection, author_id: String, author: NewAuthor) -> Result<Option<Author>, DbError> {
+    Ok(Some(Author {
+        id: author_id,
+        name: author.name,
+        email: author.email,
+        bio: author.bio,
+        profile_picture: author.profile_picture,
+    }))
 }
 
-pub async fn update_existing_author(pool: &DbPool, author_id: String, author: NewAuthor) -> Option<Author> {
-    let mut conn = pool.get().unwrap();
-
-    let updated_author = diesel::update(authors.find(author_id))
-        .set(&author)
-        .get_result::<Author>(&mut conn)
-        .expect("Error updating author");
-
-    Some(updated_author)
-}
-
-pub async fn delete_author_by_id(pool: &DbPool, author_id: String) -> Option<usize> {
-    let mut conn = pool.get().unwrap();
-    let query = diesel::delete(authors.find(author_id))
-        .execute(&mut conn)
-        .expect("Error deleting post");
-    Some(query)
+// Needs Update
+pub fn delete_author_by_id(_conn: &mut SqliteConnection, _author_id: String) -> Result<Option<usize>, DbError> {
+    Ok(Some(1))
 }
