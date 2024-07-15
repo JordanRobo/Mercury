@@ -9,10 +9,5 @@ pub fn admin_config(cfg: &mut web::ServiceConfig) {
             .service(create_post)
             .service(update_post)
             .service(delete_post)
-            .service(get_authors)
-            .service(get_author)
-            .service(create_author)
-            .service(update_author)
-            .service(delete_author)
     );
 }

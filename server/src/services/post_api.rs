@@ -1,20 +1,15 @@
-use actix_web::{ error, delete, get, patch, post, web::{ Data, Json, Path, Query, block }, HttpResponse, Responder, Result };
+use actix_web::{ error, delete, get, patch, post, web::{ Data, Json, Path, block }, HttpResponse, Responder, Result };
 use crate::handlers::{ create_new_post, delete_post_by_id, get_all_posts, get_post_by_id, update_existing_post };
 use crate::db::DbPool;
 use crate::models::*;
 
-#[derive(serde::Deserialize)]
-struct QueryParams {
-    author: Option<bool>,
-}
 
 #[get("/posts")]
-pub async fn get_posts(pool: Data<DbPool>, query: Query<QueryParams>) -> Result<impl Responder> {
-    let include_author = query.author.unwrap_or(false);
+pub async fn get_posts(pool: Data<DbPool>) -> Result<impl Responder> {
 
     let posts = block(move || {
         let mut conn = pool.get()?;
-        get_all_posts(&mut conn, include_author)
+        get_all_posts(&mut conn)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -41,7 +36,7 @@ pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl 
 }
 
 #[post("/posts")]
-pub async fn create_post(pool: Data<DbPool>, body: Json<NewPost>) -> Result<impl Responder> {
+pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<impl Responder> {
     let new_post = body.into_inner();
 
     let post = block(move || {
@@ -55,7 +50,7 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<NewPost>) -> Result<impl
 }
 
 #[patch("/posts/{post_id}")]
-pub async fn update_post(pool: Data<DbPool>, post_id: Path<String>, body: Json<NewPost>) -> Result<impl Responder> {
+pub async fn update_post(pool: Data<DbPool>, post_id: Path<String>, body: Json<UpdatePost>) -> Result<impl Responder> {
 
     let post = block(move || {
         let mut conn = pool.get()?;

@@ -1,23 +1,12 @@
 use crate::models::*;
 use diesel::prelude::*;
+use crate::utils::{slug_gen, get_current_timestamp};
 
-pub fn get_all_posts(conn: &mut SqliteConnection, include_author: bool) -> Result<Vec<PostWithAuthor>, DbError> {
-    use crate::db::schema::{posts, authors};
+pub fn get_all_posts(conn: &mut SqliteConnection) -> Result<Vec<Post>, DbError> {
+    use crate::db::posts::dsl::*;
     use diesel::prelude::*;
 
-    let query = posts::table
-        .left_join(authors::table)
-        .select((posts::all_columns, authors::all_columns.nullable()));
-
-    let results = query.load::<(Post, Option<Author>)>(conn)?;
-
-    Ok(results
-        .into_iter()
-        .map(|(post, author)| PostWithAuthor {
-            post,
-            author: if include_author { author } else { None },
-        })
-        .collect())
+    Ok(posts.load(conn)?)
 }
 
 pub fn get_post_by_id(conn: &mut SqliteConnection, post_id: String) -> Result<Option<Post>, DbError> {
@@ -31,18 +20,23 @@ pub fn get_post_by_id(conn: &mut SqliteConnection, post_id: String) -> Result<Op
     Ok(post)
 }
 
-pub fn create_new_post(conn: &mut SqliteConnection, new_post: NewPost) -> Result<Post, DbError> {
+pub fn create_new_post(conn: &mut SqliteConnection, new_post: CreatePost) -> Result<Post, DbError> {
     use crate::db::posts::dsl::*;
+
+    let current_time = get_current_timestamp();
 
     let post = Post {
         id: xid::new().to_string(),
-        title: new_post.title,
-        slug: new_post.slug,
-        content: new_post.content,
-        feature_image: new_post.feature_image,
+        title: new_post.title.clone(),
+        slug: slug_gen(&new_post.title),
         excerpt: new_post.excerpt,
-        published: new_post.published,
+        content: new_post.content,
         author_id: new_post.author_id,
+        feature_image: new_post.feature_image,
+        status: new_post.status,
+        published_at: None,
+        created_at: Some(current_time),
+        updated_at: Some(current_time),
     };
 
     diesel::insert_into(posts)
@@ -52,7 +46,7 @@ pub fn create_new_post(conn: &mut SqliteConnection, new_post: NewPost) -> Result
     Ok(post)
 }
 
-pub fn update_existing_post(conn: &mut SqliteConnection, post_id: String, post: NewPost) -> Result<Option<Post>, DbError> {
+pub fn update_existing_post(conn: &mut SqliteConnection, post_id: String, post: UpdatePost) -> Result<Option<Post>, DbError> {
     use crate::db::posts::dsl::*;
 
     diesel::update(posts.find(post_id.clone()))
