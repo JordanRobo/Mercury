@@ -1,5 +1,5 @@
-use actix_web::web;
 use crate::services::*;
+use actix_web::web;
 
 pub fn admin_config(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -8,6 +8,6 @@ pub fn admin_config(cfg: &mut web::ServiceConfig) {
             .service(get_post)
             .service(create_post)
             .service(update_post)
-            .service(delete_post)
+            .service(delete_post),
     );
 }

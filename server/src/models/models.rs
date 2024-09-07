@@ -1,9 +1,7 @@
-use diesel::prelude::*;
-use serde::{ Serialize, Deserialize };
 use crate::db::schema::*;
 use chrono::NaiveDateTime;
-
-pub type DbError = Box<dyn std::error::Error + Send + Sync>;
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Debug, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = authors)]
@@ -55,7 +53,6 @@ pub struct PostTag {
     pub post_id: Option<String>,
     pub tag_id: Option<String>,
 }
-
 
 #[derive(Queryable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = subscriptions)]

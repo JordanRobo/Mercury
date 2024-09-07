@@ -1,7 +1,9 @@
-use diesel::prelude::*;
-use serde::{ Serialize, Deserialize };
 use crate::db::schema::*;
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
+
+use super::{Author, Tag};
 
 #[derive(Queryable, Debug, Serialize, Deserialize, Insertable)]
 #[diesel(belongs_to(Author))]
@@ -42,4 +44,11 @@ pub struct UpdatePost {
     pub status: Option<String>,
     pub published_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PostInclude {
+    pub post: Post,
+    pub author: Option<Author>,
+    pub tags: Option<Vec<Tag>>,
 }

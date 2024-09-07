@@ -1,15 +1,37 @@
-use actix_web::{ error, delete, get, patch, post, web::{ Data, Json, Path, block }, HttpResponse, Responder, Result };
-use crate::handlers::{ create_new_post, delete_post_by_id, get_all_posts, get_post_by_id, update_existing_post };
 use crate::db::DbPool;
+use crate::handlers::{
+    create_new_post, delete_post_by_id, get_all_posts, get_post_by_id, get_posts_author,
+    get_posts_author_tags, get_posts_tags, update_existing_post,
+};
 use crate::models::*;
+use actix_web::{
+    delete, error, get, patch, post,
+    web::{block, Data, Json, Path, Query},
+    HttpResponse, Responder, Result,
+};
+use serde::Deserialize;
 
+#[derive(Deserialize)]
+struct PostQuery {
+    inc: Option<String>,
+}
 
 #[get("/posts")]
-pub async fn get_posts(pool: Data<DbPool>) -> Result<impl Responder> {
-
+pub async fn get_posts(pool: Data<DbPool>, query: Query<PostQuery>) -> Result<impl Responder> {
     let posts = block(move || {
         let mut conn = pool.get()?;
-        get_all_posts(&mut conn)
+        match &query.inc {
+            Some(inc) => {
+                let includes: Vec<&str> = inc.split(',').collect();
+                match (includes.contains(&"author"), includes.contains(&"tags")) {
+                    (true, true) => get_posts_author_tags(&mut conn),
+                    (true, false) => get_posts_author(&mut conn),
+                    (false, true) => get_posts_tags(&mut conn),
+                    (false, false) => get_all_posts(&mut conn),
+                }
+            }
+            None => get_all_posts(&mut conn),
+        }
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -30,9 +52,8 @@ pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl 
 
     Ok(match post {
         Some(post) => HttpResponse::Ok().json(post),
-        None => HttpResponse::NotFound().body("No Post found")
+        None => HttpResponse::NotFound().body("No Post found"),
     })
-
 }
 
 #[post("/posts")]
@@ -50,8 +71,11 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<i
 }
 
 #[patch("/posts/{post_id}")]
-pub async fn update_post(pool: Data<DbPool>, post_id: Path<String>, body: Json<UpdatePost>) -> Result<impl Responder> {
-
+pub async fn update_post(
+    pool: Data<DbPool>,
+    post_id: Path<String>,
+    body: Json<UpdatePost>,
+) -> Result<impl Responder> {
     let post = block(move || {
         let mut conn = pool.get()?;
         update_existing_post(&mut conn, post_id.into_inner(), body.into_inner())
@@ -80,5 +104,4 @@ pub async fn delete_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<im
         Some(_) => HttpResponse::Ok().body("Post deleted"),
         None => HttpResponse::NotFound().body("Post not found"),
     })
-    
 }
