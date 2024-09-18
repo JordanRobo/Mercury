@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use mercury::{db, models::Post, services::admin_config};
+use mercury::{config::admin_config, db, posts::models::Post};
 
 #[actix_web::test]
 async fn test_get_posts() {

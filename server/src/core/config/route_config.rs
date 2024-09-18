@@ -1,4 +1,4 @@
-use crate::services::*;
+use crate::posts::routes::{create_post, delete_post, get_post, get_posts, update_post};
 use actix_web::web;
 
 pub fn admin_config(cfg: &mut web::ServiceConfig) {

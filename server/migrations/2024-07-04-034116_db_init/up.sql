@@ -64,25 +64,10 @@ CREATE TABLE post_tags (
     FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
--- Subscriptions table
-CREATE TABLE subscriptions (
+-- Forms table
+CREATE TABLE forms (
     id TEXT PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    status TEXT CHECK(status IN ('active', 'unsubscribed')) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Enquiries table
-CREATE TABLE enquiries (
-    id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
-    surname TEXT,
-    email TEXT NOT NULL,
-    job_title TEXT,
-    company TEXT,
-    enquiry_type TEXT,
-    subject TEXT,
-    message TEXT NOT NULL,
-    status TEXT CHECK(status IN ('new', 'in_progress', 'resolved')) DEFAULT 'new',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    unread INTEGER NOT NULL,
+    form_data TEXT
 );

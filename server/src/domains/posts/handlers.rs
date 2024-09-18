@@ -1,6 +1,10 @@
-use crate::db::schema::{authors, post_tags, posts, tags};
-use crate::db::DbError;
-use crate::models::*;
+use crate::authors::models::Author;
+use crate::db::{
+    schema::{authors, post_tags, posts, tags},
+    DbError,
+};
+use crate::posts::models::{CreatePost, Post, PostInclude, UpdatePost};
+use crate::tags::models::{PostTag, Tag};
 use crate::utils::{get_current_timestamp, slug_gen};
 use diesel::prelude::*;
 
@@ -124,7 +128,7 @@ pub fn get_post_by_id(
     conn: &mut SqliteConnection,
     post_id: String,
 ) -> Result<Option<Post>, DbError> {
-    use crate::db::posts::dsl::*;
+    use crate::db::schema::posts::dsl::*;
 
     let post = posts
         .filter(id.eq(post_id.to_string()))
@@ -135,7 +139,7 @@ pub fn get_post_by_id(
 }
 
 pub fn create_new_post(conn: &mut SqliteConnection, new_post: CreatePost) -> Result<Post, DbError> {
-    use crate::db::posts::dsl::*;
+    use crate::db::schema::posts::dsl::*;
 
     let current_time = get_current_timestamp();
 
@@ -163,7 +167,7 @@ pub fn update_existing_post(
     post_id: String,
     post: UpdatePost,
 ) -> Result<Option<Post>, DbError> {
-    use crate::db::posts::dsl::*;
+    use crate::db::schema::posts::dsl::*;
 
     diesel::update(posts.find(post_id.clone()))
         .set(&post)
@@ -178,7 +182,7 @@ pub fn delete_post_by_id(
     conn: &mut SqliteConnection,
     post_id: String,
 ) -> Result<Option<usize>, DbError> {
-    use crate::db::posts::dsl::*;
+    use crate::db::schema::posts::dsl::*;
 
     let query = diesel::delete(posts.find(post_id)).execute(conn)?;
 

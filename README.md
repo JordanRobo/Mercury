@@ -56,7 +56,7 @@ Follow the instructions below to get MercuryCMS up and running on your local mac
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/Mercury.git
+git clone https://github.com/JordanRobo/Mercury.git
 ```
 
 2. Navigate to the project directory:
@@ -80,7 +80,7 @@ bun install
 ```bash
 bun run start
 ```
-The MercuryCMS admin panel should now be running locally at `http://localhost:3000`, and the backend server at `http://localhost:8000`.
+The MercuryCMS admin panel should now be running locally at `http://localhost:5173`, and the backend server at `http://localhost:2323`.
 
 ## Contributing
 

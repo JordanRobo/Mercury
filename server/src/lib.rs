@@ -5,13 +5,13 @@ use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpResponse, HttpServer, Result};
 use env_logger::Env;
 use serde::Serialize;
-use services::*;
 
-pub mod db;
-pub mod handlers;
-pub mod models;
-pub mod services;
+mod core;
+mod domains;
 pub mod utils;
+
+pub use core::*;
+pub use domains::*;
 
 #[derive(Serialize)]
 pub struct Response {
@@ -42,7 +42,7 @@ pub fn run() -> Result<Server, Error> {
             .app_data(app_data.clone())
             .route("/", web::get().to(index))
             .default_service(web::route().to(not_found))
-            .configure(admin_config)
+            .configure(config::admin_config)
     })
     .bind(("127.0.0.1", 2323))?
     .run();

@@ -1,9 +1,9 @@
-use crate::db::schema::*;
+use crate::authors::models::Author;
+use crate::db::schema::posts;
+use crate::tags::models::Tag;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-
-use super::{Author, Tag};
 
 #[derive(Queryable, Debug, Serialize, Deserialize, Insertable)]
 #[diesel(belongs_to(Author))]

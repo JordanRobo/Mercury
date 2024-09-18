@@ -1,6 +1,6 @@
 [package]
 name = "mercury"
-version = "0.2.3"
+version = "0.3.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,14 +9,13 @@ edition = "2021"
 actix-web = "4.2.1"
 env_logger = "0.10.0"
 chrono = { version = "0.4.22", features = ["serde"] }
-diesel = { version = "2.0.2", features = ["sqlite", "r2d2", "chrono", "uuid"] }
+diesel = { version = "2.2.3", features = ["sqlite", "r2d2", "chrono", "uuid"] }
 libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
 dotenv = "0.15.0"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_json = "1.0.86"
 xid = "1.1.1"
 regex = "1.5"
-
-[dev-dependencies]
-tokio = { version = "1", features = ["full"] }
-reqwest = { version = "0.11", features = ["json"] }
+anyhow = "1.0.89"
+actix-multipart = "0.7.2"
+mime_guess = "2.0.5"
