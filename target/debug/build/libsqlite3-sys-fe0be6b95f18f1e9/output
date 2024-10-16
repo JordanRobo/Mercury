@@ -44,5 +44,5 @@ HOST_ARFLAGS = None
 cargo:rerun-if-env-changed=ARFLAGS
 ARFLAGS = None
 cargo:rustc-link-lib=static=sqlite3
-cargo:rustc-link-search=native=/home/jordan/Desktop/mercury-cms/server/target/debug/build/libsqlite3-sys-fe0be6b95f18f1e9/out
-cargo:lib_dir=/home/jordan/Desktop/mercury-cms/server/target/debug/build/libsqlite3-sys-fe0be6b95f18f1e9/out
+cargo:rustc-link-search=native=/home/jordan/Desktop/mercury-cms/target/debug/build/libsqlite3-sys-fe0be6b95f18f1e9/out
+cargo:lib_dir=/home/jordan/Desktop/mercury-cms/target/debug/build/libsqlite3-sys-fe0be6b95f18f1e9/out

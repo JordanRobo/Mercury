@@ -2,3 +2,5 @@
 *.db
 *.db*
 sdk/
+/target
+rustfmt.toml

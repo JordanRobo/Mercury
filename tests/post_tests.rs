@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use mercury::{config::admin_config, db, posts::models::Post};
+use mercury::{config::admin_api, db, posts::models::Post};
 
 #[actix_web::test]
 async fn test_get_posts() {
@@ -8,12 +8,7 @@ async fn test_get_posts() {
     let app_data = web::Data::new(db);
 
     // Create the app with the same configuration as in main.rs
-    let app = test::init_service(
-        App::new()
-            .app_data(app_data.clone())
-            .configure(admin_config),
-    )
-    .await;
+    let app = test::init_service(App::new().app_data(app_data.clone()).configure(admin_api)).await;
 
     // Send a request to the /posts endpoint
     let req = test::TestRequest::get().uri("/api/posts").to_request();

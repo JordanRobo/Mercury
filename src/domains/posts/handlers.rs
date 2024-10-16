@@ -1,127 +1,85 @@
-use crate::authors::models::Author;
-use crate::db::{
-    schema::{authors, post_tags, posts, tags},
-    DbError,
+use crate::db::{schema::posts, DbError};
+use crate::posts::models::{
+    CreatePost, Post, PostResponse, PostWithAuthor, PostWithAuthorAndTags, PostWithTags, UpdatePost,
 };
-use crate::posts::models::{CreatePost, Post, PostInclude, UpdatePost};
-use crate::tags::models::{PostTag, Tag};
+use crate::tags::models::Tag;
+use crate::users::models::Author;
 use crate::utils::{get_current_timestamp, slug_gen};
 use diesel::prelude::*;
 
-pub fn get_all_posts(conn: &mut SqliteConnection) -> Result<Vec<PostInclude>, DbError> {
-    posts::table
-        .load::<Post>(conn)
-        .map(|posts| {
-            posts
-                .into_iter()
-                .map(|post| PostInclude {
-                    post,
-                    author: None,
-                    tags: None,
-                })
-                .collect()
-        })
-        .map_err(|e| -> DbError { Box::new(e) })
+// Mock data
+fn mock_post() -> Post {
+    Post {
+        id: "1".to_string(),
+        title: "First Post".to_string(),
+        slug: "first-post".to_string(),
+        excerpt: Some("This is an excerpt".to_string()),
+        content: Some("This is the content of the first post".to_string()),
+        author_id: Some("1".to_string()),
+        feature_image: None,
+        status: Some("published".to_string()),
+        published_at: None,
+        created_at: None,
+        updated_at: None,
+    }
 }
 
-pub fn get_posts_author(conn: &mut SqliteConnection) -> Result<Vec<PostInclude>, DbError> {
-    posts::table
-        .left_join(authors::table)
-        .load::<(Post, Option<Author>)>(conn)
-        .map(|results| {
-            results
-                .into_iter()
-                .map(|(post, author)| PostInclude {
-                    post,
-                    author,
-                    tags: None,
-                })
-                .collect()
-        })
-        .map_err(|e| -> DbError { Box::new(e) })
+fn mock_author() -> Author {
+    Author {
+        id: "1".to_string(),
+        name: "John Doe".to_string(),
+        slug: "john-doe".to_string(),
+        email: "john@example.com".to_string(),
+        bio: "A sample bio".to_string(),
+        profile_picture: "profile.jpg".to_string(),
+    }
 }
 
-pub fn get_posts_tags(conn: &mut SqliteConnection) -> Result<Vec<PostInclude>, DbError> {
-    let posts_with_tags = posts::table
-        .left_join(post_tags::table.inner_join(tags::table))
-        .load::<(Post, Option<(PostTag, Tag)>)>(conn)?;
-
-    let mut post_includes: Vec<PostInclude> = Vec::new();
-    let mut current_post: Option<Post> = None;
-    let mut current_tags: Vec<Tag> = Vec::new();
-
-    for (post, tag_opt) in posts_with_tags {
-        if current_post
-            .as_ref()
-            .map(|p| p.id != post.id)
-            .unwrap_or(true)
-        {
-            if let Some(prev_post) = current_post.take() {
-                post_includes.push(PostInclude {
-                    post: prev_post,
-                    author: None,
-                    tags: Some(std::mem::take(&mut current_tags)),
-                });
-            }
-            current_post = Some(post);
-        }
-        if let Some((_, tag)) = tag_opt {
-            current_tags.push(tag);
-        }
-    }
-
-    if let Some(last_post) = current_post.take() {
-        post_includes.push(PostInclude {
-            post: last_post,
-            author: None,
-            tags: Some(current_tags),
-        });
-    }
-
-    Ok(post_includes)
+fn mock_tags() -> Vec<Tag> {
+    vec![
+        Tag {
+            id: "1".to_string(),
+            name: "tag 1".to_string(),
+            slug: "tag-1".to_string(),
+        },
+        Tag {
+            id: "2".to_string(),
+            name: "tag 2".to_string(),
+            slug: "tag-2".to_string(),
+        },
+    ]
 }
 
-pub fn get_posts_author_tags(conn: &mut SqliteConnection) -> Result<Vec<PostInclude>, DbError> {
-    let posts_with_author_and_tags = posts::table
-        .left_join(authors::table)
-        .left_join(post_tags::table.inner_join(tags::table))
-        .load::<(Post, Option<Author>, Option<(PostTag, Tag)>)>(conn)?;
+pub fn get_all_posts(conn: &mut SqliteConnection) -> Result<PostResponse, DbError> {
+    let posts = posts::table.load::<Post>(conn)?;
+    Ok(PostResponse::Posts(posts))
+}
 
-    let mut post_includes: Vec<PostInclude> = Vec::new();
-    let mut current_post: Option<Post> = None;
-    let mut current_author: Option<Author> = None;
-    let mut current_tags: Vec<Tag> = Vec::new();
+pub fn get_posts_author(_conn: &mut SqliteConnection) -> Result<PostResponse, DbError> {
+    let post_with_author = PostWithAuthor {
+        post: mock_post(),
+        author: Some(mock_author()),
+    };
+    Ok(PostResponse::PostsAuthor(vec![post_with_author]))
+}
 
-    for (post, author, tag_opt) in posts_with_author_and_tags {
-        if current_post
-            .as_ref()
-            .map(|p| p.id != post.id)
-            .unwrap_or(true)
-        {
-            if let Some(prev_post) = current_post.take() {
-                post_includes.push(PostInclude {
-                    post: prev_post,
-                    author: current_author.take(),
-                    tags: Some(std::mem::take(&mut current_tags)),
-                });
-            }
-            current_post = Some(post);
-            current_author = author;
-        }
-        if let Some((_, tag)) = tag_opt {
-            current_tags.push(tag);
-        }
-    }
+pub fn get_posts_tags(_conn: &mut SqliteConnection) -> Result<PostResponse, DbError> {
+    let post_with_tags = PostWithTags {
+        post: mock_post(),
+        tags: Some(mock_tags()),
+    };
+    Ok(PostResponse::PostsTags(vec![post_with_tags]))
+}
 
-    if let Some(last_post) = current_post.take() {
-        post_includes.push(PostInclude {
-            post: last_post,
-            author: current_author,
-            tags: Some(current_tags),
-        });
-    }
-
-    Ok(post_includes)
+pub fn get_posts_author_tags(_conn: &mut SqliteConnection) -> Result<PostResponse, DbError> {
+    let post_with_author_and_tags = PostWithAuthorAndTags {
+        post: mock_post(),
+        author: Some(mock_author()),
+        tags: Some(mock_tags()),
+    };
+    Ok(PostResponse::PostsAuthorTags(vec![
+        post_with_author_and_tags,
+    ]))
 }
 
 pub fn get_post_by_id(
@@ -132,6 +90,20 @@ pub fn get_post_by_id(
 
     let post = posts
         .filter(id.eq(post_id.to_string()))
+        .first::<Post>(conn)
+        .optional()?;
+
+    Ok(post)
+}
+
+pub fn get_post_by_slug(
+    conn: &mut SqliteConnection,
+    post_slug: String,
+) -> Result<Option<Post>, DbError> {
+    use crate::db::schema::posts::dsl::*;
+
+    let post = posts
+        .filter(slug.eq(post_slug.to_string()))
         .first::<Post>(conn)
         .optional()?;
 

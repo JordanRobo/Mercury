@@ -2,8 +2,8 @@
 # see https://diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "src/db/schema.rs"
+file = "src/core/db/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "/home/jordan/Desktop/Mercury/server/migrations"
+dir = "/home/jordan/Desktop/mercury-cms/migrations"

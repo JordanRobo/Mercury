@@ -1,10 +1,9 @@
 use std::io::Error;
 
 use actix_web::dev::Server;
-use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpResponse, HttpServer, Result};
-use env_logger::Env;
-use serde::Serialize;
+use actix_web::{web, App, HttpServer, Result};
+use actix_web_httpauth::middleware::HttpAuthentication;
+use auth::handlers::check_auth;
 
 mod core;
 mod domains;
@@ -13,38 +12,24 @@ pub mod utils;
 pub use core::*;
 pub use domains::*;
 
-#[derive(Serialize)]
-pub struct Response {
-    pub message: String,
-}
-
-async fn index() -> HttpResponse {
-    HttpResponse::Ok().body("Welcome to Mercury CMS API Server 🚀")
-}
-
-async fn not_found() -> Result<HttpResponse> {
-    let response = Response {
-        message: "Resource not found".to_string(),
-    };
-    Ok(HttpResponse::NotFound().json(response))
-}
-
 pub fn run() -> Result<Server, Error> {
-    env_logger::init_from_env(Env::default().default_filter_or("info"));
-
     let db = db::establish_connection();
     let app_data = web::Data::new(db);
 
     let server = HttpServer::new(move || {
+        let auth = HttpAuthentication::bearer(check_auth);
+
         App::new()
-            .wrap(Logger::default())
-            .wrap(Logger::new("%a %{User-Agent}i"))
             .app_data(app_data.clone())
-            .route("/", web::get().to(index))
-            .default_service(web::route().to(not_found))
-            .configure(config::admin_config)
+            .service(web::resource("/login").route(web::post().to(auth::handlers::login)))
+            .service(
+                web::scope("/admin")
+                    .wrap(auth)
+                    .configure(config::admin_api),
+            )
+            .service(web::scope("/content").configure(config::content_api))
     })
-    .bind(("127.0.0.1", 2323))?
+    .bind(("127.0.0.1", 2030))?
     .run();
 
     Ok(server)

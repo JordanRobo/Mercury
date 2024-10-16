@@ -1,38 +1,30 @@
--- Users table (for admin authentication)
-CREATE TABLE users (
-    id TEXT PRIMARY KEY NOT NULL,
-    username TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    api_key TEXT UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Authors table (updated)
-CREATE TABLE authors (
+CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    pass TEXT NOT NULL,
+    role TEXT NOT NULL,
     bio TEXT,
     profile_picture TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (profile_picture) REFERENCES media(file_path)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (profile_picture) REFERENCES media(id)
 );
 
 -- Media table
-CREATE TABLE media (
-    id TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY NOT NULL,
     file_name TEXT NOT NULL,
     file_type TEXT NOT NULL,
     file_size INTEGER NOT NULL,
-    file_path TEXT PRIMARY KEY NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    file_path TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Posts table (updated)
-CREATE TABLE posts (
+CREATE TABLE IF NOT EXISTS posts (
     id TEXT PRIMARY KEY NOT NULL,
     title TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
@@ -40,34 +32,26 @@ CREATE TABLE posts (
     content TEXT,
     author_id TEXT,
     feature_image TEXT,
-    status TEXT CHECK(status IN ('draft', 'published', 'archived')) DEFAULT 'draft',
-    published_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (author_id) REFERENCES authors(id),
-    FOREIGN KEY (feature_image) REFERENCES media(file_path)
+    status TEXT DEFAULT 'draft',
+    published_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id),
+    FOREIGN KEY (feature_image) REFERENCES media(id)
 );
 
 -- Tags table
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT UNIQUE NOT NULL,
     slug TEXT UNIQUE NOT NULL
 );
 
 -- Post_Tags junction table
-CREATE TABLE post_tags (
+CREATE TABLE IF NOT EXISTS post_tags (
     post_id TEXT,
     tag_id TEXT,
     PRIMARY KEY (post_id, tag_id),
     FOREIGN KEY (post_id) REFERENCES posts(id),
     FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
--- Forms table
-CREATE TABLE forms (
-    id TEXT PRIMARY KEY,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    unread INTEGER NOT NULL,
-    form_data TEXT
 );

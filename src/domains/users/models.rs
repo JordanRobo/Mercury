@@ -3,13 +3,36 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug, Serialize, Deserialize)]
+#[derive(Queryable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = users)]
 pub struct User {
     pub id: String,
-    pub username: String,
+    pub name: String,
+    pub slug: String,
     pub email: String,
-    pub password_hash: String,
-    pub api_key: Option<String>,
+    pub pass: String,
+    pub role: String,
+    pub bio: Option<String>,
+    pub profile_picture: Option<String>,
     pub created_at: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Author {
+    pub id: String,
+    pub name: String,
+    pub slug: String,
+    pub email: String,
+    pub bio: String,
+    pub profile_picture: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateUser {
+    pub id: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateUser {
+    pub id: String
 }

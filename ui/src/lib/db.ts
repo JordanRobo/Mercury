@@ -1,1 +1,0 @@
-export const db = import.meta.env.VITE_MERCURY_API;

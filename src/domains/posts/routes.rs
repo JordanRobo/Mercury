@@ -55,6 +55,23 @@ pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl 
     })
 }
 
+#[get("/posts/slug/{post_slug}")]
+pub async fn get_post_slug(pool: Data<DbPool>, post_slug: Path<String>) -> Result<impl Responder> {
+    let post_slug = post_slug.into_inner();
+
+    let post = block(move || {
+        let mut conn = pool.get()?;
+        handlers::get_post_by_slug(&mut conn, post_slug)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    Ok(match post {
+        Some(post) => HttpResponse::Ok().json(post),
+        None => HttpResponse::NotFound().body("No Post found"),
+    })
+}
+
 #[post("/posts")]
 pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<impl Responder> {
     let new_post = body.into_inner();
@@ -70,11 +87,7 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<i
 }
 
 #[patch("/posts/{post_id}")]
-pub async fn update_post(
-    pool: Data<DbPool>,
-    post_id: Path<String>,
-    body: Json<UpdatePost>,
-) -> Result<impl Responder> {
+pub async fn update_post(pool: Data<DbPool>, post_id: Path<String>, body: Json<UpdatePost>) -> Result<impl Responder> {
     let post = block(move || {
         let mut conn = pool.get()?;
         handlers::update_existing_post(&mut conn, post_id.into_inner(), body.into_inner())
