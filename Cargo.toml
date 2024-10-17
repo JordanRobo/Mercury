@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.2.1"
+actix-cors = "0.7.0"
 chrono = { version = "0.4.22", features = ["serde"] }
 diesel = { version = "2.2.4", features = ["sqlite", "r2d2", "chrono", "uuid"] }
 libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
@@ -19,3 +20,4 @@ actix-multipart = "0.7.2"
 mime_guess = "2.0.5"
 actix-web-httpauth = "0.8.2"
 jsonwebtoken = "9.3.0"
+rand = "0.8"

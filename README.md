@@ -11,7 +11,7 @@ Mercury CMS is a modern, user-friendly headless content management system design
 
 ## Acknowledgements
 
-MercuryCMS is built with the following technologies:
+Mercury CMS is built with the following technologies:
 
 - [Rust](https://www.rust-lang.org/)
 - [Actix](https://actix.rs/)

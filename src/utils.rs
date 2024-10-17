@@ -25,5 +25,12 @@ pub fn get_current_timestamp() -> NaiveDateTime {
 
 pub fn get_site_identifier() -> String {
     dotenv().ok();
-    env::var("SITE_IDENTIFIER").expect("SITE_IDENTIFIER must be set")
+    env::var("SITE_ID").expect("SITE_ID must be set")
+}
+
+pub fn get_jwt_secret() -> Vec<u8> {
+    dotenv().ok();
+    env::var("JWT_SECRET")
+        .expect("JWT_SECRET must be set")
+        .into_bytes()
 }

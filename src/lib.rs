@@ -1,5 +1,6 @@
 use std::io::Error;
 
+use actix_cors::Cors;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -7,6 +8,7 @@ use auth::handlers::check_auth;
 
 mod core;
 mod domains;
+pub mod setup;
 pub mod utils;
 
 pub use core::*;
@@ -21,6 +23,7 @@ pub fn run() -> Result<Server, Error> {
 
         App::new()
             .app_data(app_data.clone())
+            .wrap(Cors::permissive()) // Permissive for development, change later
             .service(web::resource("/login").route(web::post().to(auth::handlers::login)))
             .service(
                 web::scope("/admin")
