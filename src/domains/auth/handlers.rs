@@ -1,9 +1,7 @@
-use crate::db::schema::users;
 use crate::utils::{get_jwt_secret, get_site_identifier};
 use actix_web::{dev::ServiceRequest, web, Error, HttpResponse, Responder};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use chrono::{DateTime, Duration, Utc};
-use diesel::prelude::*;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
 use super::models::{Claims, LoginRequest, LoginResponse};
@@ -64,12 +62,4 @@ pub async fn login(form: web::Json<LoginRequest>) -> impl Responder {
     } else {
         HttpResponse::Unauthorized().body("Invalid username or password")
     }
-}
-
-pub fn check_admin(conn: &mut SqliteConnection) -> bool {
-    let count = users::table
-        .count()
-        .get_result(conn)
-        .unwrap_or(0);
-    count == 0
 }

@@ -1,20 +1,17 @@
-use rand::Rng;
+use actix_web::{
+    error,
+    web::{block, Data, Json},
+    HttpResponse, Responder, Result,
+};
+use diesel::prelude::*;
+use std::env;
 use std::fs::OpenOptions;
 use std::io::Write;
 
-fn generate_secret(length: usize) -> String {
-    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-                            abcdefghijklmnopqrstuvwxyz\
-                            0123456789)(*&^%$#@!~";
-    let mut rng = rand::thread_rng();
-
-    (0..length)
-        .map(|_| {
-            let idx = rng.gen_range(0..CHARSET.len());
-            CHARSET[idx] as char
-        })
-        .collect()
-}
+use crate::db::schema::users::dsl::*;
+use crate::db::{DbError, DbPool};
+use crate::users::models::{CreateUser, User};
+use crate::utils::{generate_secret, get_current_timestamp, slug_gen};
 
 pub fn run_setup() -> std::io::Result<()> {
     let jwt_secret = generate_secret(64);
@@ -32,4 +29,49 @@ pub fn run_setup() -> std::io::Result<()> {
 
     println!("Setup complete. Environment file (.env) has been created with secure random values.");
     Ok(())
+}
+
+pub async fn create_admin(pool: Data<DbPool>, body: Json<CreateUser>) -> Result<impl Responder> {
+    let admin_input = body.into_inner();
+
+    let admin = block(move || {
+        let mut conn = pool.get()?;
+        new_admin(&mut conn, admin_input)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    env::remove_var("SETUP_TOKEN");
+
+    Ok(HttpResponse::Created().json(admin))
+}
+
+fn new_admin(conn: &mut SqliteConnection, body: CreateUser) -> Result<User, DbError> {
+    let current_time = get_current_timestamp();
+
+    let admin = User {
+        id: xid::new().to_string(),
+        name: body.name.clone(),
+        slug: slug_gen(&body.name),
+        email: body.email,
+        pass: body.pass,
+        role: "Admin".to_string(),
+        bio: None,
+        profile_picture: None,
+        created_at: Some(current_time),
+    };
+
+    diesel::insert_into(users)
+        .values(&admin)
+        .execute(conn)?;
+
+    Ok(admin)
+}
+
+pub fn check_admin(conn: &mut SqliteConnection) -> bool {
+    let count = users
+        .count()
+        .get_result(conn)
+        .unwrap_or(0);
+    count == 0
 }

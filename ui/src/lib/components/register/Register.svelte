@@ -4,21 +4,23 @@
 	import { Input } from "$lib/components/ui/input";
 	import { Label } from "$lib/components/ui/label";
 	import { toast } from "svelte-sonner";
-	import { login } from "$lib/api/auth";
+	import { register } from "$lib/api/auth";
 
+	let name = "";
 	let email = "";
 	let password = "";
+	let password_verify = "";
 
 	async function handleSubmit() {
-		const success = await login(email, password);
-		if (!success) {
-			// Need to add different error messages
-			// 4xx Email and Password don't match
-			// 4xx User doesn't exist
-			// 4xx Server error
-			// 4xx Too many failed attempts, Locked out
-			// 4xx Enter a valid Email
-			toast.error("Login failed. Please check your credentials.");
+		if (password != password_verify) {
+			toast.error("Passwords do not match, please try again.");
+		} else {
+			const success = await register(name, email, password);
+			if (!success) {
+				toast.error("Error creating user");
+			} else {
+				toast.success("Successfully created admin account");
+			}
 		}
 	}
 </script>
@@ -26,10 +28,14 @@
 <form on:submit|preventDefault={handleSubmit} class="flex items-center h-dvh">
 	<Card.Root class="w-full max-w-sm mx-auto">
 		<Card.Header>
-			<Card.Title class="text-2xl">Login</Card.Title>
-			<Card.Description>Enter your email below to login to your account.</Card.Description>
+			<Card.Title class="text-2xl">Create Admin Account</Card.Title>
+			<Card.Description>Enter your details below to create your admin account.</Card.Description>
 		</Card.Header>
 		<Card.Content class="grid gap-4">
+			<div class="grid gap-2">
+				<Label for="name">Name</Label>
+				<Input id="neame" type="text" bind:value={name} placeholder="Jordan Robinson" required />
+			</div>
 			<div class="grid gap-2">
 				<Label for="email">Email</Label>
 				<Input id="email" type="email" bind:value={email} placeholder="jordan@mercury.rs" required />
@@ -37,6 +43,10 @@
 			<div class="grid gap-2">
 				<Label for="password">Password</Label>
 				<Input id="password" type="password" bind:value={password} required />
+			</div>
+			<div class="grid gap-2">
+				<Label for="password_verify">Confirm Passwiord</Label>
+				<Input id="password_verify" type="password" bind:value={password_verify} required />
 			</div>
 		</Card.Content>
 		<Card.Footer>

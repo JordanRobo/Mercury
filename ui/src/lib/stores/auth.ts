@@ -29,3 +29,5 @@ function createAuthStore() {
 }
 
 export const auth = createAuthStore();
+
+export const adminExists = writable(false);
