@@ -1,18 +1,37 @@
+use std::fs::OpenOptions;
 use std::io::Error;
+use std::io::Write;
 
 use actix_cors::Cors;
-use actix_web::dev::{Server, Service};
-use actix_web::{web, App, HttpResponse, HttpServer, Result};
+use actix_web::dev::Server;
+use actix_web::{web, App, HttpServer, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use auth::handlers::check_auth;
 
 mod core;
 mod domains;
-pub mod setup;
 pub mod utils;
 
 pub use core::*;
 pub use domains::*;
+
+pub fn setup() -> std::io::Result<()> {
+    let jwt_secret = utils::generate_secret(64);
+    let site_id = utils::generate_secret(32);
+
+    let env_contents = format!("JWT_SECRET={}\nSITE_ID={}\nDATABASE_URL=mercury.db", jwt_secret, site_id);
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(".env")?;
+
+    file.write_all(env_contents.as_bytes())?;
+
+    println!("Setup complete. Environment file (.env) has been created with secure random values.");
+    Ok(())
+}
 
 pub fn run() -> Result<Server, Error> {
     let db = db::establish_connection();
@@ -20,30 +39,11 @@ pub fn run() -> Result<Server, Error> {
 
     let server = HttpServer::new(move || {
         let auth = HttpAuthentication::bearer(check_auth);
-        let db_clone = app_data.clone();
 
         App::new()
             .app_data(app_data.clone())
             .wrap(Cors::permissive()) // Permissive for development, change later
             .service(web::resource("/login").route(web::post().to(auth::handlers::login)))
-            .service(
-                web::scope("/check")
-                    .wrap_fn(move |req, srv| {
-                        let mut conn = db_clone
-                            .get_ref()
-                            .get()
-                            .expect("Couldn't get db connection");
-                        let is_admin_route_enabled = setup::check_admin(&mut conn);
-
-                        if is_admin_route_enabled {
-                            srv.call(req)
-                        } else {
-                            Box::pin(async move { Ok(req.into_response(HttpResponse::Forbidden().body("Admin setup route is not available"))) })
-                        }
-                    })
-                    .route("", web::post().to(setup::create_admin))
-                    .route("", web::get().to(HttpResponse::Ok)),
-            )
             .service(
                 web::scope("/admin")
                     .wrap(auth)

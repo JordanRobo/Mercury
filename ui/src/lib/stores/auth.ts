@@ -1,33 +1,85 @@
 import { writable } from "svelte/store";
+import { jwtDecode } from "jwt-decode";
+import type { JWTPayload } from "$lib/types/auth";
+import Cookies from "js-cookie";
 
-function createAuthStore() {
-	const { subscribe, set, update } = writable({
+interface AuthState {
+	isAuthenticated: boolean;
+	user: JWTPayload["sub"] | null;
+	site: string | null;
+}
+
+const createAuthStore = () => {
+	const { subscribe, set, update } = writable<AuthState>({
 		isAuthenticated: false,
-		token: null,
-		isLoading: true,
+		user: null,
+		site: null,
 	});
 
 	return {
 		subscribe,
-		login: (token) => {
-			localStorage.setItem("token", token);
-			set({ isAuthenticated: true, token, isLoading: false });
+		setToken: (token: string) => {
+			try {
+				const decoded = jwtDecode<JWTPayload>(token);
+				Cookies.set("jwt", token, {
+					expires: new Date(decoded.exp * 1000),
+					secure: true,
+					sameSite: "strict",
+				});
+				set({
+					isAuthenticated: true,
+					user: decoded.sub,
+					site: decoded.site,
+				});
+			} catch (error) {
+				console.error("Invalid token:", error);
+				Cookies.remove("jwt");
+				set({
+					isAuthenticated: false,
+					user: null,
+					site: null,
+				});
+			}
 		},
 		logout: () => {
-			localStorage.removeItem("token");
-			set({ isAuthenticated: false, token: null, isLoading: false });
+			Cookies.remove("jwt");
+			set({
+				isAuthenticated: false,
+				user: null,
+				site: null,
+			});
 		},
 		checkAuth: () => {
-			const token = localStorage.getItem("token");
+			const token = Cookies.get("jwt");
 			if (token) {
-				set({ isAuthenticated: true, token, isLoading: false });
-			} else {
-				set({ isAuthenticated: false, token: null, isLoading: false });
+				try {
+					const decoded = jwtDecode<JWTPayload>(token);
+					if (decoded.exp * 1000 > Date.now()) {
+						set({
+							isAuthenticated: true,
+							user: decoded.sub,
+							site: decoded.site,
+						});
+					} else {
+						Cookies.remove("jwt");
+						set({
+							isAuthenticated: false,
+							user: null,
+							site: null,
+						});
+					}
+				} catch (error) {
+					console.error("Invalid token:", error);
+					Cookies.remove("jwt");
+					set({
+						isAuthenticated: false,
+						user: null,
+						site: null,
+					});
+				}
 			}
 		},
 	};
-}
+};
 
 export const auth = createAuthStore();
-
-export const adminExists = writable(false);

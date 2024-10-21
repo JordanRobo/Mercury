@@ -10,7 +10,8 @@ pub struct User {
     pub name: String,
     pub slug: String,
     pub email: String,
-    pub pass: String,
+    pub pass_hash: String,
+    pub pass_salt: Vec<u8>,
     pub role: String,
     pub bio: Option<String>,
     pub profile_picture: Option<String>,
@@ -31,7 +32,7 @@ pub struct Author {
 pub struct CreateUser {
     pub name: String,
     pub email: String,
-    pub pass: String,
+    pub password: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

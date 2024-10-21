@@ -1,10 +1,16 @@
-use crate::utils::{get_jwt_secret, get_site_identifier};
-use actix_web::{dev::ServiceRequest, web, Error, HttpResponse, Responder};
+use crate::{
+    users::models::User,
+    utils::{get_jwt_secret, get_site_identifier},
+};
+use actix_web::{dev::ServiceRequest, error, web, Error, HttpResponse, Responder, Result};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
+use argon2::{self, Config};
 use chrono::{DateTime, Duration, Utc};
+use diesel::prelude::*;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
-use super::models::{Claims, LoginRequest, LoginResponse};
+use super::models::{Claims, LoginRequest, LoginResponse, Sub};
+use crate::db::{DbError, DbPool};
 
 fn decode_token(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
     decode::<Claims>(token, &DecodingKey::from_secret(&get_jwt_secret()), &Validation::default()).map(|token_data| token_data.claims)
@@ -39,27 +45,61 @@ pub async fn check_auth(req: ServiceRequest, credentials: BearerAuth) -> Result<
     }
 }
 
-pub async fn login(form: web::Json<LoginRequest>) -> impl Responder {
-    // Add Login logic here
-    // Temp hardcoded credentials for development
-    // Implement password hashing
-    if form.email == "mail@mail.com" && form.password == "root" {
-        let expiration = Utc::now()
-            .checked_add_signed(Duration::hours(1))
-            .expect("valid timestamp")
-            .timestamp();
+fn match_credentials(conn: &mut SqliteConnection, input_email: &str) -> Result<Option<User>, DbError> {
+    use crate::db::schema::users::dsl::*;
 
-        let claims = Claims {
-            sub: form.email.clone(),
-            exp: expiration as usize,
-            site: get_site_identifier(),
-        };
+    let user = users
+        .filter(email.eq(&input_email))
+        .first::<User>(conn)
+        .optional()?;
 
-        match encode(&Header::default(), &claims, &EncodingKey::from_secret(&get_jwt_secret())) {
-            Ok(token) => HttpResponse::Ok().json(LoginResponse { token }),
-            Err(_) => HttpResponse::InternalServerError().body("Could not generate token"),
+    Ok(user)
+}
+
+pub fn hash_password(password: &str, salt: &[u8]) -> String {
+    let config = Config::default();
+    argon2::hash_encoded(password.as_bytes(), salt, &config).unwrap()
+}
+
+pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result<impl Responder> {
+    let input_pass = form.password.clone();
+    let input_email = form.email.clone();
+
+    let user = web::block(move || {
+        let mut conn = pool.get()?;
+        match_credentials(&mut conn, &input_email)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    Ok(match user {
+        Some(user) => {
+            if hash_password(&input_pass, &user.pass_salt.clone()) == user.pass_hash {
+                let expiration = Utc::now()
+                    .checked_add_signed(Duration::hours(1))
+                    .expect("valid timestamp")
+                    .timestamp();
+
+                let sub = Sub {
+                    id: user.id.to_string(),
+                    email: user.email,
+                    role: user.role,
+                };
+
+                let claims = Claims {
+                    sub,
+                    exp: expiration as usize,
+                    site: get_site_identifier(),
+                };
+
+                match encode(&Header::default(), &claims, &EncodingKey::from_secret(&get_jwt_secret())) {
+                    Ok(token) => HttpResponse::Ok().json(LoginResponse { token }),
+                    Err(_) => HttpResponse::InternalServerError().body("Could not generate token"),
+                }
+            } else {
+                HttpResponse::Unauthorized().body("Invalid username or password")
+            }
         }
-    } else {
-        HttpResponse::Unauthorized().body("Invalid username or password")
-    }
+        None => HttpResponse::Unauthorized().body("Invalid username or password"),
+    })
 }

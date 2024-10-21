@@ -1,23 +1,29 @@
 [package]
 name = "mercury"
-version = "0.3.1"
+version = "0.4.10"
 edition = "2021"
+authors = ["Jordan Robinson <hello.world@jordanrobo.xyz>"]
+homepage = "https://mercury.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 actix-web = "4.2.1"
 actix-cors = "0.7.0"
+actix-multipart = "0.7.2"
+actix-web-httpauth = "0.8.2"
 chrono = { version = "0.4.22", features = ["serde"] }
+cliclack = "0.3.5"
+console = "0.15.8"
 diesel = { version = "2.2.4", features = ["sqlite", "r2d2", "chrono", "uuid"] }
-libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
+diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
+jsonwebtoken = "9.3.0"
+libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
+mime_guess = "2.0.5"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_json = "1.0.86"
-xid = "1.1.1"
 regex = "1.5"
-actix-multipart = "0.7.2"
-mime_guess = "2.0.5"
-actix-web-httpauth = "0.8.2"
-jsonwebtoken = "9.3.0"
 rand = "0.8"
+rust-argon2 = "2.1"
+xid = "1.1.1"

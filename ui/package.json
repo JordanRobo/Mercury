@@ -29,8 +29,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@types/js-cookie": "^3.0.6",
 		"bits-ui": "^0.21.16",
 		"clsx": "^2.1.1",
+		"js-cookie": "^3.0.5",
+		"jwt-decode": "^4.0.0",
 		"svelte-preprocess": "^6.0.3",
 		"tailwind-merge": "^2.5.3",
 		"tailwind-variants": "^0.2.1"

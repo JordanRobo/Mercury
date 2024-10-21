@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use dotenv::dotenv;
+use rand::rngs::OsRng;
 use rand::Rng;
 use regex::Regex;
 use std::env;
@@ -48,4 +49,10 @@ pub fn generate_secret(length: usize) -> String {
             CHARSET[idx] as char
         })
         .collect()
+}
+
+pub fn generate_salt() -> [u8; 16] {
+    let mut salt = [0u8; 16];
+    OsRng.fill(&mut salt);
+    salt
 }
