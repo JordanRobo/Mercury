@@ -21,6 +21,7 @@ pub struct Claims {
 #[derive(Serialize, Deserialize)]
 pub struct Sub {
     pub id: String,
+    pub name: String,
     pub email: String,
     pub role: String,
 }

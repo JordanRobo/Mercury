@@ -1,9 +1,12 @@
+export interface Sub {
+	id: string;
+	name: string;
+	email: string;
+	role: string;
+}
+
 export interface JWTPayload {
-	sub: {
-		id: string;
-		email: string;
-		role: string;
-	};
+	sub: Sub;
 	exp: number;
 	site: string;
 }

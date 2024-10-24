@@ -29,6 +29,8 @@ fn check_token_site(claims: &Claims) -> bool {
 }
 
 pub async fn check_auth(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, (Error, ServiceRequest)> {
+    // Add logging for failed attempts
+    // Might add caching for valid tokens
     let token = credentials.token();
 
     match decode_token(token) {
@@ -62,6 +64,10 @@ pub fn hash_password(password: &str, salt: &[u8]) -> String {
 }
 
 pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result<impl Responder> {
+    // Add rate limiting check here
+    // Log failed login attempts
+    // Add password complexity validation
+
     let input_pass = form.password.clone();
     let input_email = form.email.clone();
 
@@ -82,6 +88,7 @@ pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Re
 
                 let sub = Sub {
                     id: user.id.to_string(),
+                    name: user.name,
                     email: user.email,
                     role: user.role,
                 };
