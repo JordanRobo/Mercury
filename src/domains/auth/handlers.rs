@@ -36,14 +36,14 @@ pub async fn check_auth(req: ServiceRequest, credentials: BearerAuth) -> Result<
     match decode_token(token) {
         Ok(claims) => {
             if !check_token_expiry(&claims) {
-                Err((Error::from(actix_web::error::ErrorUnauthorized("Token expired")), req))
+                Err((actix_web::error::ErrorUnauthorized("Token expired"), req))
             } else if !check_token_site(&claims) {
-                Err((Error::from(actix_web::error::ErrorUnauthorized("Invalid site")), req))
+                Err((actix_web::error::ErrorUnauthorized("Invalid site"), req))
             } else {
                 Ok(req)
             }
         }
-        Err(_) => Err((Error::from(actix_web::error::ErrorUnauthorized("Invalid token")), req)),
+        Err(_) => Err((actix_web::error::ErrorUnauthorized("Invalid token"), req)),
     }
 }
 
@@ -58,55 +58,84 @@ fn match_credentials(conn: &mut SqliteConnection, input_email: &str) -> Result<O
     Ok(user)
 }
 
-pub fn hash_password(password: &str, salt: &[u8]) -> String {
+pub fn create_password(password: &str, salt: &[u8]) -> String {
     let config = Config::default();
     argon2::hash_encoded(password.as_bytes(), salt, &config).unwrap()
 }
 
-pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result<impl Responder> {
-    // Add rate limiting check here
-    // Log failed login attempts
-    // Add password complexity validation
+fn verify_password(encoded: &str, password: &str) -> bool {
+    let pwd = password.as_bytes();
+    argon2::verify_encoded(encoded, pwd).unwrap_or(false)
+}
 
+pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result<impl Responder> {
     let input_pass = form.password.clone();
     let input_email = form.email.clone();
 
-    let user = web::block(move || {
+    let default_hash = "$argon2id$v=19$m=4096,t=3,p=1$saltysaltysaltysalt$HashValueThatWillNeverMatchButHasCorrectLength".to_string();
+    let start_time = std::time::Instant::now();
+
+    let user_result = web::block(move || {
         let mut conn = pool.get()?;
         match_credentials(&mut conn, &input_email)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
 
-    Ok(match user {
-        Some(user) => {
-            if hash_password(&input_pass, &user.pass_salt.clone()) == user.pass_hash {
-                let expiration = Utc::now()
-                    .checked_add_signed(Duration::hours(1))
-                    .expect("valid timestamp")
-                    .timestamp();
+    let (hash_to_verify, user_exists, user) = match user_result {
+        Some(ref user) => (&user.pass_hash, true, Some(user)),
+        None => (&default_hash, false, None),
+    };
 
-                let sub = Sub {
-                    id: user.id.to_string(),
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                };
+    let valid_pass = verify_password(hash_to_verify, &input_pass);
 
-                let claims = Claims {
-                    sub,
-                    exp: expiration as usize,
-                    site: get_site_identifier(),
-                };
+    let token_result = if user_exists && valid_pass {
+        let user = user.unwrap().clone(); 
 
-                match encode(&Header::default(), &claims, &EncodingKey::from_secret(&get_jwt_secret())) {
-                    Ok(token) => HttpResponse::Ok().json(LoginResponse { token }),
-                    Err(_) => HttpResponse::InternalServerError().body("Could not generate token"),
-                }
-            } else {
-                HttpResponse::Unauthorized().body("Invalid username or password")
-            }
+        let expiration = Utc::now()
+            .checked_add_signed(Duration::hours(1))
+            .expect("valid timestamp")
+            .timestamp();
+
+        let claims = Claims {
+            sub: Sub {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+            exp: expiration as usize,
+            site: get_site_identifier(),
+        };
+
+        encode(&Header::default(), &claims, &EncodingKey::from_secret(&get_jwt_secret()))
+    } else {
+        let dummy_claims = Claims {
+            sub: Sub {
+                id: "0".to_string(),
+                name: "dummy".to_string(),
+                email: "dummy@example.com".to_string(),
+                role: "none".to_string(),
+            },
+            exp: (Utc::now().timestamp() + 3600) as usize,
+            site: get_site_identifier(),
+        };
+        
+        encode(&Header::default(), &dummy_claims, &EncodingKey::from_secret(&get_jwt_secret()))
+    };
+
+    let elapsed = start_time.elapsed();
+    let target_duration = std::time::Duration::from_millis(400);
+    if elapsed < target_duration {
+        actix_web::rt::time::sleep(target_duration - elapsed).await;
+    }
+
+    Ok(if user_exists && valid_pass {
+        match token_result {
+            Ok(token) => HttpResponse::Ok().json(LoginResponse { token }),
+            Err(_) => HttpResponse::InternalServerError().body("Could not generate token"),
         }
-        None => HttpResponse::Unauthorized().body("Invalid username or password"),
+    } else {
+        HttpResponse::Unauthorized().body("Invalid username or password")
     })
 }

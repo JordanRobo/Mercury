@@ -1,4 +1,4 @@
-use crate::auth::handlers::hash_password;
+use crate::auth::handlers::create_password;
 use crate::db::DbError;
 use crate::utils::{generate_salt, get_current_timestamp, slug_gen};
 use actix_web::HttpResponse;
@@ -38,7 +38,7 @@ pub fn create_admin(conn: &mut SqliteConnection, body: CreateUser) -> Result<Htt
             name: body.name.clone(),
             slug: slug_gen(&body.name),
             email: body.email,
-            pass_hash: hash_password(&body.password, &salt),
+            pass_hash: create_password(&body.password, &salt),
             pass_salt: salt.to_vec(),
             role: "Admin".to_string(),
             bio: None,

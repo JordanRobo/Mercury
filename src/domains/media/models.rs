@@ -3,7 +3,7 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug, Identifiable, Serialize, Deserialize)]
+#[derive(Queryable, Debug, Serialize, Deserialize)]
 #[diesel(primary_key(file_path))]
 #[diesel(table_name = media)]
 pub struct Media {

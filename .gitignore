@@ -4,3 +4,4 @@
 sdk/
 /target
 rustfmt.toml
+.vscode
