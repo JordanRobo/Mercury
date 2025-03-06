@@ -9,17 +9,21 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use auth::handlers::check_auth;
 
 mod core;
-mod domains;
+mod modules;
 pub mod utils;
 
 pub use core::*;
-pub use domains::*;
+pub use modules::*;
 
 pub fn setup() -> std::io::Result<()> {
     let jwt_secret = utils::generate_secret(64);
     let site_id = utils::generate_secret(32);
 
-    let env_contents = format!("JWT_SECRET={}\nSITE_ID={}\nDATABASE_URL=mercury.db", jwt_secret, site_id);
+    let default_salt = utils::generate_salt();
+    let default_pass = utils::generate_secret(32);
+    let default_hash = auth::handlers::create_password(&default_pass, &default_salt);
+
+    let env_contents = format!("JWT_SECRET={}\nSITE_ID={}\nDEFAULT_PASSWORD={}\nDATABASE_URL=mercury.db", jwt_secret, site_id, default_hash);
 
     let mut file = OpenOptions::new()
         .write(true)

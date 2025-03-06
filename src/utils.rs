@@ -25,16 +25,9 @@ pub fn get_current_timestamp() -> NaiveDateTime {
     chrono::Local::now().naive_utc()
 }
 
-pub fn get_site_identifier() -> String {
+pub fn get_env_var(key: &str) -> String {
     dotenv().ok();
-    env::var("SITE_ID").expect("SITE_ID must be set")
-}
-
-pub fn get_jwt_secret() -> Vec<u8> {
-    dotenv().ok();
-    env::var("JWT_SECRET")
-        .expect("JWT_SECRET must be set")
-        .into_bytes()
+    env::var(key).expect("Key must be set")
 }
 
 pub fn generate_secret(length: usize) -> String {

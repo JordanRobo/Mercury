@@ -1,6 +1,6 @@
 use crate::{
     users::models::User,
-    utils::{get_jwt_secret, get_site_identifier},
+    utils::get_env_var,
 };
 use actix_web::{dev::ServiceRequest, error, web, Error, HttpResponse, Responder, Result};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
@@ -13,7 +13,7 @@ use super::models::{Claims, LoginRequest, LoginResponse, Sub};
 use crate::db::{DbError, DbPool};
 
 fn decode_token(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
-    decode::<Claims>(token, &DecodingKey::from_secret(&get_jwt_secret()), &Validation::default()).map(|token_data| token_data.claims)
+    decode::<Claims>(token, &DecodingKey::from_secret(get_env_var("JWT_SECRET").as_bytes()), &Validation::default()).map(|token_data| token_data.claims)
 }
 
 fn check_token_expiry(claims: &Claims) -> bool {
@@ -25,7 +25,7 @@ fn check_token_expiry(claims: &Claims) -> bool {
 }
 
 fn check_token_site(claims: &Claims) -> bool {
-    claims.site == get_site_identifier()
+    claims.site == get_env_var("SITE_ID")
 }
 
 pub async fn check_auth(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, (Error, ServiceRequest)> {
@@ -72,7 +72,7 @@ pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Re
     let input_pass = form.password.clone();
     let input_email = form.email.clone();
 
-    let default_hash = "$argon2id$v=19$m=4096,t=3,p=1$saltysaltysaltysalt$HashValueThatWillNeverMatchButHasCorrectLength".to_string();
+    let default_hash = get_env_var("DEFAULT_PASSWORD");
     let start_time = std::time::Instant::now();
 
     let user_result = web::block(move || {
@@ -89,7 +89,7 @@ pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Re
 
     let valid_pass = verify_password(hash_to_verify, &input_pass);
 
-    let token_result = if user_exists && valid_pass {
+    let response = if user_exists && valid_pass {
         let user = user.unwrap().clone(); 
 
         let expiration = Utc::now()
@@ -105,37 +105,22 @@ pub async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Re
                 role: user.role,
             },
             exp: expiration as usize,
-            site: get_site_identifier(),
+            site: get_env_var("SITE_ID"),
         };
 
-        encode(&Header::default(), &claims, &EncodingKey::from_secret(&get_jwt_secret()))
-    } else {
-        let dummy_claims = Claims {
-            sub: Sub {
-                id: "0".to_string(),
-                name: "dummy".to_string(),
-                email: "dummy@example.com".to_string(),
-                role: "none".to_string(),
-            },
-            exp: (Utc::now().timestamp() + 3600) as usize,
-            site: get_site_identifier(),
-        };
-        
-        encode(&Header::default(), &dummy_claims, &EncodingKey::from_secret(&get_jwt_secret()))
-    };
-
-    let elapsed = start_time.elapsed();
-    let target_duration = std::time::Duration::from_millis(400);
-    if elapsed < target_duration {
-        actix_web::rt::time::sleep(target_duration - elapsed).await;
-    }
-
-    Ok(if user_exists && valid_pass {
-        match token_result {
+        match encode(&Header::default(), &claims, &EncodingKey::from_secret(get_env_var("JWT_SECRET").as_bytes())) {
             Ok(token) => HttpResponse::Ok().json(LoginResponse { token }),
             Err(_) => HttpResponse::InternalServerError().body("Could not generate token"),
         }
     } else {
         HttpResponse::Unauthorized().body("Invalid username or password")
-    })
+    };
+
+    let elapsed = start_time.elapsed();
+    let target_duration = std::time::Duration::from_millis(500);
+    if elapsed < target_duration {
+        actix_web::rt::time::sleep(target_duration - elapsed).await;
+    }
+
+    Ok(response)
 }
