@@ -8,22 +8,22 @@ homepage = "https://mercury.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "4.2.1"
+actix-web = "4.9.0"
 actix-cors = "0.7.0"
 actix-multipart = "0.7.2"
 actix-web-httpauth = "0.8.2"
-chrono = { version = "0.4.22", features = ["serde"] }
+chrono = { version = "0.4.40", features = ["serde"] }
 cliclack = "0.3.5"
-console = "0.15.8"
-diesel = { version = "2.2.4", features = ["sqlite", "r2d2", "chrono", "uuid"] }
+console = "0.15.11"
+diesel = { version = "2.2.8", features = ["sqlite", "r2d2", "chrono", "uuid"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
-jsonwebtoken = "9.3.0"
+jsonwebtoken = "9.3.1"
 libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
 mime_guess = "2.0.5"
-serde = { version = "1.0.145", features = ["derive"] }
-serde_json = "1.0.86"
-regex = "1.5"
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0.140"
+regex = "1.11"
 rand = "0.8"
 rust-argon2 = "2.1"
 xid = "1.1.1"

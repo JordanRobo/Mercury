@@ -6,4 +6,4 @@ file = "src/core/db/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "/home/jordan/Desktop/mercury-cms/migrations"
+dir = "/workspaces/Mercury/migrations"

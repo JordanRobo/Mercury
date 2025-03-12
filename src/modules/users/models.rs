@@ -5,17 +5,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Identifiable, Debug, Serialize, Deserialize, Insertable, Clone)]
 #[diesel(table_name = users)]
+#[diesel(primary_key(user_id))]
 pub struct User {
-    pub id: String,
-    pub name: String,
-    pub slug: String,
+    pub user_id: String,
     pub email: String,
+    pub first_name: String,
+    pub last_name: Option<String>,
     pub pass_hash: String,
-    pub pass_salt: Vec<u8>,
-    pub role: String,
-    pub bio: Option<String>,
-    pub profile_picture: Option<String>,
-    pub created_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub last_login: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
