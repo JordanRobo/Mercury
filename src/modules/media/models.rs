@@ -4,14 +4,13 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Debug, Serialize, Deserialize)]
-#[diesel(primary_key(file_path))]
+#[diesel(primary_key(media_id))]
 #[diesel(table_name = media)]
 pub struct Media {
-    pub id: String,
+    pub media_id: String,
     pub file_name: String,
     pub file_type: String,
-    pub file_size: i32,
-    pub file_path: String,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub file_size: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }

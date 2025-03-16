@@ -6,24 +6,28 @@ use actix_cors::Cors;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
-use auth::handlers::check_auth;
+use auth::AuthService;
 
 mod core;
 mod modules;
-pub mod utils;
+mod utils;
 
 pub use core::*;
 pub use modules::*;
+pub use utils::*;
 
 pub fn setup() -> std::io::Result<()> {
-    let jwt_secret = utils::generate_secret(64);
-    let site_id = utils::generate_secret(32);
+    let jwt_secret = Utils::generate_secret(64);
+    let site_id = Utils::generate_secret(32);
 
-    let default_salt = utils::generate_salt();
-    let default_pass = utils::generate_secret(32);
-    let default_hash = auth::handlers::create_password(&default_pass, &default_salt);
+    let default_salt = Utils::generate_salt();
+    let default_pass = Utils::generate_secret(32);
+    let default_hash = AuthService::create_password(&default_pass, &default_salt);
 
-    let env_contents = format!("JWT_SECRET={}\nSITE_ID={}\nDEFAULT_PASSWORD={}\nDATABASE_URL=mercury.db", jwt_secret, site_id, default_hash);
+    let env_contents = format!(
+        "JWT_SECRET={}\nSITE_ID={}\nDEFAULT_PASSWORD={}\nDATABASE_URL=mercury.db",
+        jwt_secret, site_id, default_hash
+    );
 
     let mut file = OpenOptions::new()
         .write(true)
@@ -42,17 +46,13 @@ pub fn run() -> Result<Server, Error> {
     let app_data = web::Data::new(db);
 
     let server = HttpServer::new(move || {
-        let auth = HttpAuthentication::bearer(check_auth);
+        let auth = HttpAuthentication::bearer(AuthService::check_auth);
 
         App::new()
             .app_data(app_data.clone())
             .wrap(Cors::permissive()) // Permissive for development, change later
-            .service(web::resource("/login").route(web::post().to(auth::handlers::login)))
-            .service(
-                web::scope("/admin")
-                    .wrap(auth)
-                    .configure(config::admin_api),
-            )
+            .service(web::resource("/login").route(web::post().to(AuthService::login)))
+            .service(web::scope("/admin").wrap(auth).configure(config::admin_api))
             .service(web::scope("/content").configure(config::content_api))
     })
     .bind(("127.0.0.1", 2030))?

@@ -7,49 +7,6 @@ use crate::users::models::Author;
 use crate::utils::{get_current_timestamp, slug_gen};
 use diesel::prelude::*;
 
-// Mock data
-fn mock_post() -> Post {
-    Post {
-        id: "1".to_string(),
-        title: "First Post".to_string(),
-        slug: "first-post".to_string(),
-        excerpt: Some("This is an excerpt".to_string()),
-        content: Some("This is the content of the first post".to_string()),
-        author_id: Some("1".to_string()),
-        feature_image: None,
-        status: Some("published".to_string()),
-        published_at: None,
-        created_at: None,
-        updated_at: None,
-    }
-}
-
-fn mock_author() -> Author {
-    Author {
-        id: "1".to_string(),
-        name: "John Doe".to_string(),
-        slug: "john-doe".to_string(),
-        email: "john@example.com".to_string(),
-        bio: "A sample bio".to_string(),
-        profile_picture: "profile.jpg".to_string(),
-    }
-}
-
-fn mock_tags() -> Vec<Tag> {
-    vec![
-        Tag {
-            id: "1".to_string(),
-            name: "tag 1".to_string(),
-            slug: "tag-1".to_string(),
-        },
-        Tag {
-            id: "2".to_string(),
-            name: "tag 2".to_string(),
-            slug: "tag-2".to_string(),
-        },
-    ]
-}
-
 pub fn get_all_posts(conn: &mut SqliteConnection) -> Result<PostResponse, DbError> {
     let posts = posts::table.load::<Post>(conn)?;
     Ok(PostResponse::Posts(posts))

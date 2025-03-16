@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 #[diesel(belongs_to(Post))]
 #[diesel(belongs_to(Tag))]
 #[diesel(table_name = post_tags)]
-#[diesel(primary_key(post_id, tag_id))]
 pub struct PostTag {
+    pub id: String,
     pub post_id: String,
     pub tag_id: String,
 }

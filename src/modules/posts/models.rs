@@ -1,6 +1,6 @@
+use crate::authors::models::Author;
 use crate::db::schema::posts;
 use crate::tags::models::Tag;
-use crate::users::models::{Author, User};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -16,20 +16,21 @@ pub enum PostResponse {
 #[derive(
     Queryable, Identifiable, Associations, Debug, Serialize, Deserialize, Default, Insertable,
 )]
-#[diesel(belongs_to(User, foreign_key = author_id))]
+#[diesel(belongs_to(Author, foreign_key = author_id))]
+#[diesel(primary_key(post_id))]
 #[diesel(table_name = posts)]
 pub struct Post {
-    pub id: String,
+    pub post_id: String,
     pub title: String,
     pub slug: String,
     pub excerpt: Option<String>,
     pub content: Option<String>,
-    pub author_id: Option<String>,
+    pub author_id: String,
     pub feature_image: Option<String>,
     pub status: Option<String>,
     pub published_at: Option<NaiveDateTime>,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize)]

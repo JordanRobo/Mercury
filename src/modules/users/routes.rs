@@ -1,8 +1,5 @@
 use crate::db::DbPool;
-use crate::users::{
-    handlers,
-    models::{CreateUser, UpdateUser},
-};
+use crate::users::{CreateUser, UpdateUser, User};
 use actix_web::{
     delete, error, get, patch, post,
     web::{block, Data, Json, Path},
@@ -13,7 +10,7 @@ use actix_web::{
 pub async fn get_users(pool: Data<DbPool>) -> Result<impl Responder> {
     let users = block(move || {
         let mut conn = pool.get()?;
-        handlers::get_all_users(&mut conn)
+        User::get_all(&mut conn)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -27,7 +24,10 @@ pub async fn get_user(_pool: Data<DbPool>, _user_id: Path<String>) -> Result<imp
 }
 
 #[get("/users/slug/{user_slug}")]
-pub async fn get_user_slug(_pool: Data<DbPool>, _user_slug: Path<String>) -> Result<impl Responder> {
+pub async fn get_user_slug(
+    _pool: Data<DbPool>,
+    _user_slug: Path<String>,
+) -> Result<impl Responder> {
     Ok(HttpResponse::NotImplemented())
 }
 
@@ -37,7 +37,11 @@ pub async fn create_user(_pool: Data<DbPool>, _body: Json<CreateUser>) -> Result
 }
 
 #[patch("/users/{user_id}")]
-pub async fn update_user(_pool: Data<DbPool>, _user_id: Path<String>, _body: Json<UpdateUser>) -> Result<impl Responder> {
+pub async fn update_user(
+    _pool: Data<DbPool>,
+    _user_id: Path<String>,
+    _body: Json<UpdateUser>,
+) -> Result<impl Responder> {
     Ok(HttpResponse::NotImplemented())
 }
 

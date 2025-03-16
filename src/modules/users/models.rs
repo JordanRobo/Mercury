@@ -1,4 +1,8 @@
-use crate::db::schema::users;
+use crate::{
+    auth::AuthService,
+    db::{schema::users, DbError},
+    Utils,
+};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -18,18 +22,9 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Author {
-    pub id: String,
-    pub name: String,
-    pub slug: String,
-    pub email: String,
-    pub bio: String,
-    pub profile_picture: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct CreateUser {
-    pub name: String,
+    pub first_name: String,
+    pub last_name: Option<String>,
     pub email: String,
     pub password: String,
 }
@@ -37,4 +32,42 @@ pub struct CreateUser {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateUser {
     pub id: String,
+}
+
+impl User {
+    pub fn create(conn: &mut SqliteConnection, input: CreateUser) -> Result<Self, DbError> {
+        let id = xid::new().to_string();
+        let now = Utils::get_current_timestamp();
+        let salt = Utils::generate_salt();
+
+        let new_user = User {
+            user_id: id,
+            email: input.email,
+            first_name: input.first_name,
+            last_name: Some(input.last_name.unwrap()),
+            pass_hash: AuthService::create_password(&input.password, &salt),
+            created_at: now,
+            updated_at: now,
+            last_login: now,
+        };
+
+        diesel::insert_into(users::table)
+            .values(&new_user)
+            .execute(conn)?;
+
+        Ok(new_user)
+    }
+
+    pub fn update() -> Result<Self, DbError> {
+        todo!("Create User update fn")
+    }
+
+    pub fn delete() -> Result<Self, DbError> {
+        todo!("Create User delete fn")
+    }
+
+    pub fn get_all(conn: &mut SqliteConnection) -> Result<Vec<Self>, DbError> {
+        let users = users::table.load::<Self>(conn)?;
+        Ok(users)
+    }
 }
