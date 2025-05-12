@@ -1,5 +1,5 @@
 use crate::db::schema::authors;
-use crate::users::models::User;
+use crate::users::User;
 
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};

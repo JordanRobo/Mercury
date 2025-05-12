@@ -1,11 +1,12 @@
 use crate::{
-    posts::routes::{create_post, delete_post, get_post, get_post_slug, get_posts, update_post},
+    posts::Post::{create_post, delete_post, get_post, get_post_slug, get_posts, update_post},
     users::routes::{get_user, get_users},
 };
 use actix_web::web;
 
 pub fn admin_api(cfg: &mut web::ServiceConfig) {
-    cfg.configure(posts_admin_routes).configure(users_admin_routes);
+    cfg.configure(posts_admin_routes)
+        .configure(users_admin_routes);
 }
 
 pub fn content_api(cfg: &mut web::ServiceConfig) {
@@ -13,7 +14,9 @@ pub fn content_api(cfg: &mut web::ServiceConfig) {
 }
 
 fn posts_public_routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(get_posts).service(get_post).service(get_post_slug);
+    cfg.service(get_posts)
+        .service(get_post)
+        .service(get_post_slug);
 }
 
 fn posts_admin_routes(cfg: &mut web::ServiceConfig) {

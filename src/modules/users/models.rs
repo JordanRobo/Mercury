@@ -66,7 +66,7 @@ impl User {
         todo!("Create User delete fn")
     }
 
-    pub fn get_all(conn: &mut SqliteConnection) -> Result<Vec<Self>, DbError> {
+    pub fn fetch_all(conn: &mut SqliteConnection) -> Result<Vec<Self>, DbError> {
         let users = users::table.load::<Self>(conn)?;
         Ok(users)
     }

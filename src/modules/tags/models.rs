@@ -1,5 +1,5 @@
 use crate::db::schema::*;
-use crate::posts::models::Post;
+use crate::posts::Post;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 

@@ -1,5 +1,5 @@
 use crate::db::DbError;
-use crate::users::models::User;
+use crate::users::User;
 use crate::utils::Utils;
 use serde::{Deserialize, Serialize};
 

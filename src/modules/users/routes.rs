@@ -10,7 +10,7 @@ use actix_web::{
 pub async fn get_users(pool: Data<DbPool>) -> Result<impl Responder> {
     let users = block(move || {
         let mut conn = pool.get()?;
-        User::get_all(&mut conn)
+        User::fetch_all(&mut conn)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;

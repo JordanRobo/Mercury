@@ -1,8 +1,5 @@
 use crate::db::DbPool;
-use crate::posts::{
-    handlers,
-    models::{CreatePost, UpdatePost},
-};
+use crate::posts::{CreatePost, Post, UpdatePost};
 use actix_web::{
     delete, error, get, patch, post,
     web::{block, Data, Json, Path, Query},
@@ -29,7 +26,7 @@ pub async fn get_posts(pool: Data<DbPool>, query: Query<PostQuery>) -> Result<im
                     (false, false) => handlers::get_all_posts(&mut conn),
                 }
             }
-            None => handlers::get_all_posts(&mut conn),
+            None => Post::fetch_all(&mut conn),
         }
     })
     .await?
@@ -44,7 +41,7 @@ pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl 
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        handlers::get_post_by_id(&mut conn, post_id)
+        Post::fetch_by_id(&mut conn, post_id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -61,7 +58,7 @@ pub async fn get_post_slug(pool: Data<DbPool>, post_slug: Path<String>) -> Resul
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        handlers::get_post_by_slug(&mut conn, post_slug)
+        Post::fetch_by_slug(&mut conn, post_slug)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -78,7 +75,7 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<i
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        handlers::create_new_post(&mut conn, new_post)
+        Post::create(&mut conn, new_post)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -87,10 +84,14 @@ pub async fn create_post(pool: Data<DbPool>, body: Json<CreatePost>) -> Result<i
 }
 
 #[patch("/posts/{post_id}")]
-pub async fn update_post(pool: Data<DbPool>, post_id: Path<String>, body: Json<UpdatePost>) -> Result<impl Responder> {
+pub async fn update_post(
+    pool: Data<DbPool>,
+    post_id: Path<String>,
+    body: Json<UpdatePost>,
+) -> Result<impl Responder> {
     let post = block(move || {
         let mut conn = pool.get()?;
-        handlers::update_existing_post(&mut conn, post_id.into_inner(), body.into_inner())
+        Post::update(&mut conn, post_id.into_inner(), body.into_inner())
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -107,7 +108,7 @@ pub async fn delete_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<im
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        handlers::delete_post_by_id(&mut conn, post_id)
+        Post::delete(&mut conn, post_id)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
