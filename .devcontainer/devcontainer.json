@@ -1,20 +1,19 @@
 {
-    "name": "Mercury CMS Development",
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "app",
-    "workspaceFolder": "/workspace",
-    
-    "features": {
-      "ghcr.io/devcontainers/features/rust:1": {
-        "version": "latest",
-        "profile": "complete"
-      },
-      "ghcr.io/devcontainers/features/node:1": {
-        "version": "lts"
-      }
-    },
-  
-    "forwardPorts": [2030, 5173],
+	"name": "Mercury CMS Development",
+	"image": "ghcr.io/prulloac/base:ubuntu-24.04",
+
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/prulloac/devcontainer-features/bun:1": {},
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/rust": {
+			"version": "latest",
+			"profile": "complete"
+		},
+		"ghcr.io/swift-server-community/swift-devcontainer-features/sqlite:1": {}
+	},
+
+	"forwardPorts": [2030, 5173],
     "portsAttributes": {
       "2030": {
         "label": "Backend API",
@@ -24,34 +23,5 @@
         "label": "SvelteKit Dev Server",
         "onAutoForward": "notify"
       }
-    },
-    
-    "postCreateCommand": "./.devcontainer/post-create.sh",
-    
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "vadimcn.vscode-lldb",
-          "rust-lang.rust-analyzer",
-          "tamasfe.even-better-toml",
-          "svelte.svelte-vscode",
-          "bradlc.vscode-tailwindcss",
-          "dbaeumer.vscode-eslint",
-          "esbenp.prettier-vscode"
-        ],
-        "settings": {
-          "terminal.integrated.defaultProfile.linux": "bash",
-          "rust-analyzer.checkOnSave.command": "clippy",
-          "[svelte]": {
-            "editor.defaultFormatter": "svelte.svelte-vscode"
-          },
-          "[typescript]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode"
-          },
-          "[javascript]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode"
-          }
-        }
-      }
     }
-  }
+}
