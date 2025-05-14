@@ -1,33 +1,19 @@
 use crate::db::DbPool;
-use crate::posts::{CreatePost, Post, UpdatePost};
+use crate::posts::{CreatePost, Post, UpdatePost, PostResponse, PostQuery};
 use actix_web::{
     delete, error, get, patch, post,
     web::{block, Data, Json, Path, Query},
     HttpResponse, Responder, Result,
 };
-use serde::Deserialize;
 
-#[derive(Deserialize)]
-struct PostQuery {
-    inc: Option<String>,
-}
 
 #[get("/posts")]
 pub async fn get_posts(pool: Data<DbPool>, query: Query<PostQuery>) -> Result<impl Responder> {
+    let query_inner = query.into_inner();
+    
     let posts = block(move || {
         let mut conn = pool.get()?;
-        match &query.inc {
-            Some(inc) => {
-                let includes: Vec<&str> = inc.split(',').collect();
-                match (includes.contains(&"author"), includes.contains(&"tags")) {
-                    (true, true) => handlers::get_posts_author_tags(&mut conn),
-                    (true, false) => handlers::get_posts_author(&mut conn),
-                    (false, true) => handlers::get_posts_tags(&mut conn),
-                    (false, false) => handlers::get_all_posts(&mut conn),
-                }
-            }
-            None => Post::fetch_all(&mut conn),
-        }
+        PostResponse::fetch_all(&mut conn, &query_inner)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -36,12 +22,13 @@ pub async fn get_posts(pool: Data<DbPool>, query: Query<PostQuery>) -> Result<im
 }
 
 #[get("/posts/{post_id}")]
-pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl Responder> {
+pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>, query: Query<PostQuery>) -> Result<impl Responder> {
+    let query_inner = query.into_inner();
     let post_id = post_id.into_inner();
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        Post::fetch_by_id(&mut conn, post_id)
+        PostResponse::fetch_by_id(&mut conn, &post_id, &query_inner)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -53,12 +40,13 @@ pub async fn get_post(pool: Data<DbPool>, post_id: Path<String>) -> Result<impl 
 }
 
 #[get("/posts/slug/{post_slug}")]
-pub async fn get_post_slug(pool: Data<DbPool>, post_slug: Path<String>) -> Result<impl Responder> {
+pub async fn get_post_slug(pool: Data<DbPool>, post_slug: Path<String>, query: Query<PostQuery>) -> Result<impl Responder> {
+    let query_inner = query.into_inner();
     let post_slug = post_slug.into_inner();
 
     let post = block(move || {
         let mut conn = pool.get()?;
-        Post::fetch_by_slug(&mut conn, post_slug)
+        PostResponse::fetch_by_slug(&mut conn, &post_slug, &query_inner)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;

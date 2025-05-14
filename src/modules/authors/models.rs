@@ -1,4 +1,4 @@
-use crate::db::schema::authors;
+use crate::db::{schema::authors, DbError};
 use crate::users::User;
 
 use diesel::prelude::*;
@@ -16,8 +16,8 @@ pub struct Author {
     pub profile_picture: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AuthorRes {
+#[derive(Debug, Serialize, Deserialize, Queryable)]
+pub struct AuthorResponse {
     pub id: String,
     pub first_name: String,
     pub last_name: Option<String>,
@@ -27,23 +27,25 @@ pub struct AuthorRes {
     pub profile_picture: Option<String>,
 }
 
-impl From<(Author, User)> for AuthorRes {
-    fn from(value: (Author, User)) -> Self {
-        let (author, user) = value;
-        AuthorRes {
-            id: author.author_id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            slug: author.slug,
-            bio: author.bio,
-            profile_picture: author.profile_picture,
-        }
-    }
-}
+impl AuthorResponse {
+    pub fn fetch_by_id(conn: &mut SqliteConnection, input_id: &str) -> Result<Self, DbError> {
+        use crate::db::schema::authors::dsl::*;
+        use crate::db::schema::users::dsl::*;
 
-impl Author {
-    pub fn response(self, user: User) -> AuthorRes {
-        (self, user).into()
+        let author_resp = authors
+            .inner_join(users)
+            .filter(author_id.eq(input_id))
+            .select((
+                author_id,
+                first_name,
+                last_name,
+                email,
+                slug,
+                bio,
+                profile_picture,
+            ))
+            .first::<AuthorResponse>(conn)?;
+
+        Ok(author_resp)
     }
 }

@@ -35,21 +35,28 @@ pub struct UpdateUser {
 }
 
 impl User {
-    pub fn create(conn: &mut SqliteConnection, input: CreateUser) -> Result<Self, DbError> {
-        let id = xid::new().to_string();
+    pub fn new(user: CreateUser) -> Self {
+        let user_id = xid::new().to_string();
         let now = Utils::get_current_timestamp();
         let salt = Utils::generate_salt();
+        let pass_hash = AuthService::create_password(&user.password, &salt);
 
-        let new_user = User {
-            user_id: id,
-            email: input.email,
-            first_name: input.first_name,
-            last_name: Some(input.last_name.unwrap()),
-            pass_hash: AuthService::create_password(&input.password, &salt),
-            created_at: now,
-            updated_at: now,
-            last_login: now,
-        };
+
+        Self { 
+            user_id, 
+            email: user.email, 
+            first_name: user.first_name, 
+            last_name: user.last_name, 
+            pass_hash, 
+            created_at: now, 
+            updated_at: now, 
+            last_login: now 
+        }
+    }
+
+    pub fn create(conn: &mut SqliteConnection, user: CreateUser) -> Result<Self, DbError> {
+        
+        let new_user = Self::new(user);
 
         diesel::insert_into(users::table)
             .values(&new_user)

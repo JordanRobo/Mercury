@@ -1,7 +1,7 @@
 use cliclack::{intro, outro};
 use console::style;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use mercury::users::models::CreateUser;
+use mercury::users::CreateUser;
 use std::env;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
@@ -17,8 +17,8 @@ async fn main() -> std::io::Result<()> {
                 .black(),
         )?;
 
-        let name = cliclack::input("Welcome! Let's start off with your name:")
-            .placeholder("Jordan Robinson")
+        let first_name = cliclack::input("Welcome! Let's start off with your name:")
+            .placeholder("Jordan")
             .required(true)
             .interact::<String>()?;
 
@@ -38,10 +38,10 @@ async fn main() -> std::io::Result<()> {
         conn.run_pending_migrations(MIGRATIONS)
             .expect("Failed to run migrations");
 
-        let admin = CreateUser { name, email, password };
+        let admin = CreateUser {first_name, last_name: None, email, password};
 
         mercury::setup()?;
-        mercury::users::handlers::create_admin(conn, admin).unwrap();
+        mercury::users::User::create(conn, admin).unwrap();
 
         outro("You're all set! Start your server with the './mercury' command")?;
         return Ok(());

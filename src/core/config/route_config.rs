@@ -1,6 +1,6 @@
 use crate::{
-    posts::Post::{create_post, delete_post, get_post, get_post_slug, get_posts, update_post},
-    users::routes::{get_user, get_users},
+    posts::{create_post, delete_post, get_post, get_post_slug, get_posts, update_post},
+    users::{get_user, get_users},
 };
 use actix_web::web;
 
