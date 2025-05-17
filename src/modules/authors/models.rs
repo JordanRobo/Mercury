@@ -28,7 +28,7 @@ pub struct AuthorResponse {
 }
 
 impl AuthorResponse {
-    pub fn fetch_by_id(conn: &mut SqliteConnection, input_id: &str) -> Result<Self, DbError> {
+    pub fn fetch_by_id(conn: &mut SqliteConnection, input_id: &str) -> Result<Option<Self>, DbError> {
         use crate::db::schema::authors::dsl::*;
         use crate::db::schema::users::dsl::*;
 
@@ -44,7 +44,8 @@ impl AuthorResponse {
                 bio,
                 profile_picture,
             ))
-            .first::<AuthorResponse>(conn)?;
+            .first::<AuthorResponse>(conn)
+            .optional()?;
 
         Ok(author_resp)
     }

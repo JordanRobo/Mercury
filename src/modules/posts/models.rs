@@ -43,6 +43,15 @@ pub struct PostResponse {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct PostRequest {
+    pub title: String,
+    pub content: Option<String>,
+    pub author_id: Option<String>,
+    pub feature_image: Option<String>,
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct CreatePost {
     pub title: String,
     pub content: Option<String>,
@@ -164,7 +173,7 @@ impl PostResponse {
             
             if include_author {
                 let author_result = AuthorResponse::fetch_by_id(conn, &response.post.author_id)?;
-                response.author = Some(author_result);
+                response.author = author_result;
             }
             
             if include_tags {
