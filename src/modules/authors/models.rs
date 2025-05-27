@@ -1,5 +1,5 @@
 use crate::db::{schema::authors, DbError};
-use crate::users::User;
+use crate::Utils;
 
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,12 @@ pub struct Author {
     pub profile_picture: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateAuthor {
+    pub user_id: String,
+    pub user_name: String,
+}
+
 #[derive(Debug, Serialize, Deserialize, Queryable)]
 pub struct AuthorResponse {
     pub id: String,
@@ -25,6 +31,29 @@ pub struct AuthorResponse {
     pub slug: String,
     pub bio: Option<String>,
     pub profile_picture: Option<String>,
+}
+
+impl Author {
+    pub fn new(user: CreateAuthor) -> Self {
+        let author_id = xid::new().to_string();
+        let slug = Utils::slug_gen(&user.user_name);
+        
+        Self { 
+            author_id, 
+            user_id: user.user_id, 
+            slug, 
+            bio: None, 
+            profile_picture: None 
+        }
+    }
+
+    pub fn create(conn: &mut SqliteConnection, user: CreateAuthor) -> Result<Self, DbError> {        
+        let new_author = Self::new(user);
+
+        diesel::insert_into(authors::table).values(&new_author).execute(conn)?;
+
+        Ok(new_author)
+    }
 }
 
 impl AuthorResponse {

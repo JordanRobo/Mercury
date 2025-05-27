@@ -1,14 +1,25 @@
 use cliclack::{intro, outro};
 use console::style;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use mercury::users::CreateUser;
+use mercury::users::{UserService, CreateUser};
 use std::env;
 
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations/2024-07-04-034116_db_init");
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
+
+    if args.len() > 1 && args[1] == "seed" { 
+        intro(
+            style(" Mercury Adding Mock Data to Database... ")
+                .on_cyan()
+                .black(),
+        )?;
+
+        outro("Data has been added successfully!")?;
+        return Ok(());
+    }
 
     if args.len() > 1 && args[1] == "start" {
         intro(
@@ -41,7 +52,7 @@ async fn main() -> std::io::Result<()> {
         let admin = CreateUser {first_name, last_name: None, email, password};
 
         mercury::setup()?;
-        mercury::users::User::create(conn, admin).unwrap();
+        UserService::new_admin(conn, admin).unwrap();
 
         outro("You're all set! Start your server with the './mercury' command")?;
         return Ok(());
